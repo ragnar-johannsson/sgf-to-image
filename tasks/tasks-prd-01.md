@@ -16,16 +16,17 @@
 
 - Keep unit tests adjacent in the `tests/` directory for clarity.
 - Run all tests via `npm test`. Use `npm test tests/sgf/parseSgf.test.ts` to target a specific suite.
+- After completing a major task, run `npm test`, `npm run type-check`, `npm run format` and `npm run lint` to verify code quality.
 
 ## Tasks
 
-- [ ] 1.0 Project scaffolding and tooling setup
-  - [ ] 1.1 Scaffold a Vite‐based TypeScript library project
-  - [ ] 1.2 Configure `tsconfig.json` for strict type-checking and ESM + CJS output
-  - [ ] 1.3 Install & configure ESLint and Prettier per coding guidelines
-  - [ ] 1.4 Add Vitest and create `vitest.config.ts`
-  - [ ] 1.5 Add GitHub Actions (Node 18 & 20) for lint, test, and type-check steps
-  - [ ] 1.6 Create a basic `README.md` with install & usage examples
+- [x] 1.0 Project scaffolding and tooling setup
+  - [x] 1.1 Scaffold a Vite‐based TypeScript library project
+  - [x] 1.2 Configure `tsconfig.json` for strict type-checking and ESM + CJS output
+  - [x] 1.3 Install & configure ESLint and Prettier per coding guidelines
+  - [x] 1.4 Add Vitest and create `vitest.config.ts`
+  - [x] 1.5 Add GitHub Actions (Node 18 & 20) for lint, test, and type-check steps
+  - [x] 1.6 Create a basic `README.md` with install & usage examples
 
 - [ ] 2.0 SGF input handling and parsing
   - [ ] 2.1 Install `@sabaki/sgf`
@@ -63,4 +64,4 @@
   - [ ] 6.3 Build ESM & CJS bundles with type declarations using Vite
   - [ ] 6.4 Ensure bundle ≤ 150 kB min+gz; add size-check script
   - [ ] 6.5 Publish a beta version to npm under `sgf-to-image@next` (manual)
-  - [ ] 6.6 Update `README.md` with API reference and sample code 
+  - [ ] 6.6 Update `README.md` with API reference and sample code
