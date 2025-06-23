@@ -53,12 +53,12 @@
   - [x] 4.5 Render overwritten-label caption beneath diagram
   - [x] 4.6 Snapshot tests comparing output to `docs/example_diagram.png`
 
-- [ ] 5.0 Image export, size presets, and performance optimization
-  - [ ] 5.1 Define preset resolutions: small 480×480, medium 1080×1080, large 2160×2160
-  - [ ] 5.2 Implement `exportImage(canvas, {format, size})` returning `Buffer`/`Blob`
-  - [ ] 5.3 Apply PNG quantization & JPEG quality (85%) optimizations
-  - [ ] 5.4 Benchmark rendering speed; ensure < 100 ms for 19×19 medium
-  - [ ] 5.5 Add automated performance test (skip CI failure but log)
+- [x] 5.0 Image export, size presets, and performance optimization
+  - [x] 5.1 Define preset resolutions: small 480×480, medium 1080×1080, large 2160×2160
+  - [x] 5.2 Implement `exportImage(canvas, {format, size})` returning `Buffer`/`Blob`
+  - [x] 5.3 Apply PNG quantization & JPEG quality (85%) optimizations
+  - [x] 5.4 Benchmark rendering speed; ensure < 100 ms for 19×19 medium
+  - [x] 5.5 Add automated performance test (skip CI failure but log)
 
 - [ ] 6.0 Public API surface, error handling, and packaging
   - [ ] 6.1 Expose `convertSgfToImage(options): Promise<ImageResult>` in `src/index.ts`

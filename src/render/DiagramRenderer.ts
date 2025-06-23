@@ -10,9 +10,12 @@ import type { ConvertOptions, Move, Size } from '../types'
 import { RenderError } from '../types'
 
 /**
- * Size preset mappings
+ * Size preset mappings for image export
+ * - small: 480×480px - Suitable for web thumbnails and small displays
+ * - medium: 1080×1080px - High quality for most use cases
+ * - large: 2160×2160px - Ultra high resolution for printing
  */
-const SIZE_PRESETS: Record<string, number> = {
+export const SIZE_PRESETS: Record<string, number> = {
   small: 480,
   medium: 1080,
   large: 2160,

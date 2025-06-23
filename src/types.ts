@@ -119,3 +119,10 @@ export type { ApplyMovesResult, OverwrittenLabel } from './board/applyMoves'
 // Re-export render-related types
 export type { CanvasLike } from './render/CanvasFactory'
 export type { RenderOptions } from './render/BoardRenderer'
+
+// Re-export performance-related types
+export type {
+  BenchmarkResult,
+  BenchmarkOptions,
+  BenchmarkSummary,
+} from './performance/PerformanceBenchmark'

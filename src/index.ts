@@ -20,6 +20,9 @@ export type {
   OverwrittenLabel,
   CanvasLike,
   RenderOptions,
+  BenchmarkResult,
+  BenchmarkOptions,
+  BenchmarkSummary,
 } from './types'
 
 // Re-export error classes
@@ -44,8 +47,16 @@ export {
   DiagramRenderer,
   createDiagramRenderer,
   renderDiagram,
+  SIZE_PRESETS,
 } from './render/DiagramRenderer'
 export { ImageExporter } from './render/ImageExporter'
+
+// Re-export performance functionality
+export {
+  PerformanceBenchmark,
+  createBenchmark,
+  quickBenchmark,
+} from './performance/PerformanceBenchmark'
 
 /**
  * Convert SGF file to image
