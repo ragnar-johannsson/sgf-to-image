@@ -16,11 +16,12 @@ export default defineConfig({
       fileName: (format) => `index.${format === 'es' ? 'js' : 'cjs'}`,
     },
     rollupOptions: {
-      external: ['canvas', '@sabaki/sgf'],
+      external: ['canvas', '@sabaki/sgf', 'fs'],
       output: {
         globals: {
           canvas: 'canvas',
           '@sabaki/sgf': 'SGF',
+          fs: 'fs',
         },
       },
     },

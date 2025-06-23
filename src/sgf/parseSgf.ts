@@ -1,8 +1,20 @@
 import sgf from '@sabaki/sgf'
 import type { GameTreeNode } from '@sabaki/sgf'
-import { readFileSync } from 'fs'
 import type { SgfInput, ParsedGame, Move, GameInfo, Position } from '../types'
 import { InvalidSgfError } from '../types'
+
+// Conditionally import fs for Node.js environments
+let readFileSync: typeof import('fs').readFileSync | undefined
+
+// Check if we're in Node.js environment and try to load fs
+if (typeof window === 'undefined') {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    readFileSync = require('fs').readFileSync
+  } catch {
+    // fs not available
+  }
+}
 
 /**
  * Parse SGF input and return structured game data
@@ -28,6 +40,11 @@ export async function parseSgf(input: SgfInput): Promise<ParsedGame> {
     } else {
       // Assume it's a file path - read and parse
       try {
+        if (!readFileSync) {
+          throw new Error(
+            'File system access not available in browser environment'
+          )
+        }
         sgfContent = readFileSync(input, 'utf8')
         parsedSgf = sgf.parse(sgfContent)
       } catch (error) {

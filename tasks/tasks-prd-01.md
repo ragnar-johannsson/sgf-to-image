@@ -37,13 +37,13 @@
   - [x] 2.4 Validate board size and throw `InvalidSgfError` for unsupported sizes
   - [x] 2.5 Write unit tests covering all accepted input types & error cases
 
-- [ ] 3.0 Board model and move selection logic
-  - [ ] 3.1 Design immutable `Board` class supporting arbitrary board sizes
-  - [ ] 3.2 Implement `applyMoves(board, moves)` returning final board state
-  - [ ] 3.3 Implement range selection: full game or specific move/move-range
-  - [ ] 3.4 Generate numeric label mapping for selected range
-  - [ ] 3.5 Detect overwritten labels (e.g., ko) and produce list for caption
-  - [ ] 3.6 Unit tests for capturing, ko, overwritten labels, and edge cases
+- [x] 3.0 Board model and move selection logic
+  - [x] 3.1 Design immutable `Board` class supporting arbitrary board sizes
+  - [x] 3.2 Implement `applyMoves(board, moves)` returning final board state
+  - [x] 3.3 Implement range selection: full game or specific move/move-range
+  - [x] 3.4 Generate numeric label mapping for selected range
+  - [x] 3.5 Detect overwritten labels (e.g., ko) and produce list for caption
+  - [x] 3.6 Unit tests for capturing, ko, overwritten labels, and edge cases
 
 - [ ] 4.0 Diagram rendering engine (board, stones, labels, coordinates)
   - [ ] 4.1 Choose rendering backend (`canvas` in browser, `node-canvas` in Node)

@@ -16,6 +16,8 @@ export type {
   Position,
   GameInfo,
   StoneColor,
+  ApplyMovesResult,
+  OverwrittenLabel,
 } from './types'
 
 // Re-export error classes
@@ -23,6 +25,15 @@ export { InvalidSgfError, RenderError } from './types'
 
 // Re-export SGF parsing functionality
 export { parseSgf } from './sgf/parseSgf'
+
+// Re-export board functionality
+export { Board } from './board/Board'
+export {
+  applyMoves,
+  selectMoveRange,
+  generateMoveLabels,
+  formatOverwrittenLabels,
+} from './board/applyMoves'
 
 /**
  * Convert SGF file to image

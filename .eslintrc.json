@@ -5,9 +5,7 @@
     "es2020": true,
     "node": true
   },
-  "extends": [
-    "eslint:recommended"
-  ],
+  "extends": ["eslint:recommended"],
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint"],
   "ignorePatterns": ["dist", "node_modules", "**/*.d.ts"],
@@ -18,10 +16,7 @@
   "overrides": [
     {
       "files": ["*.ts", "*.tsx"],
-      "extends": [
-        "eslint:recommended",
-        "@typescript-eslint/recommended"
-      ],
+      "extends": ["eslint:recommended", "@typescript-eslint/recommended"],
       "rules": {
         "@typescript-eslint/no-unused-vars": "error",
         "@typescript-eslint/no-explicit-any": "warn"

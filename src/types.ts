@@ -112,3 +112,6 @@ export class RenderError extends Error {
     this.name = 'RenderError'
   }
 }
+
+// Re-export board-related types
+export type { ApplyMovesResult, OverwrittenLabel } from './board/applyMoves'

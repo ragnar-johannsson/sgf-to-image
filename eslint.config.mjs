@@ -7,7 +7,7 @@ import prettier from 'eslint-config-prettier'
 export default tseslint.config(
   // Ignore build directories and node_modules
   {
-    ignores: ['dist', 'node_modules', '**/*.d.ts']
+    ignores: ['dist', 'node_modules', '**/*.d.ts'],
   },
 
   // Base ESLint recommended rules
@@ -21,8 +21,8 @@ export default tseslint.config(
   {
     languageOptions: {
       ecmaVersion: 'latest',
-      sourceType: 'module'
-    }
+      sourceType: 'module',
+    },
   },
 
   // Custom rules
@@ -30,14 +30,14 @@ export default tseslint.config(
     rules: {
       'prefer-const': 'error',
       'no-var': 'error',
-      'eqeqeq': ['error', 'always'],
-      'curly': ['error', 'multi-line'],
+      eqeqeq: ['error', 'always'],
+      curly: ['error', 'multi-line'],
       'no-console': 'warn',
       '@typescript-eslint/no-unused-vars': 'error',
-      '@typescript-eslint/no-explicit-any': 'warn'
-    }
+      '@typescript-eslint/no-explicit-any': 'warn',
+    },
   },
 
   // Disable rules that conflict with Prettier
   prettier
-) 
+)
