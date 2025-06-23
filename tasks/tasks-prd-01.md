@@ -60,10 +60,10 @@
   - [x] 5.4 Benchmark rendering speed; ensure < 100 ms for 19×19 medium
   - [x] 5.5 Add automated performance test (skip CI failure but log)
 
-- [ ] 6.0 Public API surface, error handling, and packaging
-  - [ ] 6.1 Expose `convertSgfToImage(options): Promise<ImageResult>` in `src/index.ts`
-  - [ ] 6.2 Create custom error classes (`InvalidSgfError`, `RenderError`, etc.) with helpful messages
-  - [ ] 6.3 Build ESM & CJS bundles with type declarations using Vite
-  - [ ] 6.4 Ensure bundle ≤ 150 kB min+gz; add size-check script
-  - [ ] 6.5 Publish a beta version to npm under `sgf-to-image@next` (manual)
-  - [ ] 6.6 Update `README.md` with API reference and sample code
+- [x] 6.0 Public API surface, error handling, and packaging
+  - [x] 6.1 Expose `convertSgfToImage(options): Promise<ImageResult>` in `src/index.ts`
+  - [x] 6.2 Create custom error classes (`InvalidSgfError`, `RenderError`, etc.) with helpful messages
+  - [x] 6.3 Build ESM & CJS bundles with type declarations using Vite
+  - [x] 6.4 Ensure bundle ≤ 150 kB min+gz; add size-check script
+  - [x] 6.5 Publish a beta version to npm under `sgf-to-image@next` (manual)
+  - [x] 6.6 Update `README.md` with API reference and sample code
