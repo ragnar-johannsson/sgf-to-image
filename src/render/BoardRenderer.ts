@@ -1,0 +1,308 @@
+import { CanvasContext, type CanvasLike } from './CanvasFactory'
+import type { Board } from '../board/Board'
+import type { Position, StoneColor } from '../types'
+
+/**
+ * Configuration options for board rendering
+ */
+export interface RenderOptions {
+  size: number // Canvas size in pixels
+  showCoordinates: boolean
+  backgroundColor: string
+  lineColor: string
+  stoneColors: {
+    black: string
+    white: string
+  }
+  textColor: string
+  textStrokeColor: string
+}
+
+/**
+ * Default rendering options
+ */
+export const DEFAULT_RENDER_OPTIONS: RenderOptions = {
+  size: 480,
+  showCoordinates: false,
+  backgroundColor: '#f4c470', // Light wood color
+  lineColor: '#000000',
+  stoneColors: {
+    black: '#000000',
+    white: '#ffffff',
+  },
+  textColor: '#000000',
+  textStrokeColor: '#ffffff',
+}
+
+/**
+ * Star point positions for different board sizes
+ */
+const STAR_POINTS: Record<number, Position[]> = {
+  9: [
+    { x: 2, y: 2 },
+    { x: 6, y: 2 },
+    { x: 4, y: 4 },
+    { x: 2, y: 6 },
+    { x: 6, y: 6 },
+  ],
+  13: [
+    { x: 3, y: 3 },
+    { x: 9, y: 3 },
+    { x: 6, y: 6 },
+    { x: 3, y: 9 },
+    { x: 9, y: 9 },
+  ],
+  19: [
+    { x: 3, y: 3 },
+    { x: 9, y: 3 },
+    { x: 15, y: 3 },
+    { x: 3, y: 9 },
+    { x: 9, y: 9 },
+    { x: 15, y: 9 },
+    { x: 3, y: 15 },
+    { x: 9, y: 15 },
+    { x: 15, y: 15 },
+  ],
+}
+
+/**
+ * Board renderer for drawing Go boards with stones and labels
+ */
+export class BoardRenderer {
+  private canvas: CanvasLike
+  private ctx: CanvasContext
+  private boardSize: number
+  private options: RenderOptions
+  private cellSize: number
+  private margin: number
+
+  constructor(
+    canvas: CanvasLike,
+    boardSize: number,
+    options: Partial<RenderOptions> = {}
+  ) {
+    this.canvas = canvas
+    this.ctx = new CanvasContext(canvas)
+    this.boardSize = boardSize
+    this.options = { ...DEFAULT_RENDER_OPTIONS, ...options }
+
+    // Calculate cell size and margin
+    const coordinateSpace = this.options.showCoordinates ? 40 : 20
+    const availableSpace = this.options.size - coordinateSpace * 2
+    this.cellSize = availableSpace / (boardSize - 1)
+    this.margin = coordinateSpace
+
+    // Set canvas size
+    this.canvas.width = this.options.size
+    this.canvas.height = this.options.size
+  }
+
+  /**
+   * Render the complete board with background, grid, star points, and coordinates
+   */
+  renderBoard(): void {
+    this.clearCanvas()
+    this.drawBackground()
+    this.drawGrid()
+    this.drawStarPoints()
+    if (this.options.showCoordinates) {
+      this.drawCoordinates()
+    }
+  }
+
+  /**
+   * Render stones on the board
+   */
+  renderStones(board: Board): void {
+    for (let y = 0; y < this.boardSize; y++) {
+      for (let x = 0; x < this.boardSize; x++) {
+        const position = { x, y }
+        const stone = board.getStone(position)
+        if (stone !== 'empty') {
+          this.drawStone(position, stone)
+        }
+      }
+    }
+  }
+
+  /**
+   * Render move labels on stones
+   */
+  renderMoveLabels(labels: Map<string, number>): void {
+    for (const [positionKey, label] of labels.entries()) {
+      const [x, y] = positionKey.split(',').map(Number)
+      const position = { x, y }
+      this.drawMoveLabel(position, label.toString())
+    }
+  }
+
+  /**
+   * Render overwritten labels caption beneath the board
+   */
+  renderOverwrittenLabels(overwrittenLabels: string[]): void {
+    if (overwrittenLabels.length === 0) {
+      return
+    }
+
+    const captionY = this.options.size - 10
+    const captionText = overwrittenLabels.join(', ')
+
+    this.ctx.setFont('12px monospace')
+    this.ctx.setTextAlign('center')
+    this.ctx.setTextBaseline('bottom')
+    this.ctx.setFillStyle(this.options.textColor)
+
+    this.ctx.fillText(captionText, this.options.size / 2, captionY)
+  }
+
+  /**
+   * Clear the entire canvas
+   */
+  private clearCanvas(): void {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+  }
+
+  /**
+   * Draw the background
+   */
+  private drawBackground(): void {
+    this.ctx.setFillStyle(this.options.backgroundColor)
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+  }
+
+  /**
+   * Draw the grid lines
+   */
+  private drawGrid(): void {
+    this.ctx.setStrokeStyle(this.options.lineColor)
+    this.ctx.setLineWidth(1)
+    this.ctx.beginPath()
+
+    // Draw vertical lines
+    for (let i = 0; i < this.boardSize; i++) {
+      const x = this.margin + i * this.cellSize
+      this.ctx.moveTo(x, this.margin)
+      this.ctx.lineTo(x, this.margin + (this.boardSize - 1) * this.cellSize)
+    }
+
+    // Draw horizontal lines
+    for (let i = 0; i < this.boardSize; i++) {
+      const y = this.margin + i * this.cellSize
+      this.ctx.moveTo(this.margin, y)
+      this.ctx.lineTo(this.margin + (this.boardSize - 1) * this.cellSize, y)
+    }
+
+    this.ctx.stroke()
+  }
+
+  /**
+   * Draw star points
+   */
+  private drawStarPoints(): void {
+    const starPoints = STAR_POINTS[this.boardSize] || []
+    const radius = Math.max(2, this.cellSize * 0.08)
+
+    this.ctx.setFillStyle(this.options.lineColor)
+
+    for (const point of starPoints) {
+      const x = this.margin + point.x * this.cellSize
+      const y = this.margin + point.y * this.cellSize
+
+      this.ctx.beginPath()
+      this.ctx.arc(x, y, radius, 0, Math.PI * 2)
+      this.ctx.fill()
+    }
+  }
+
+  /**
+   * Draw coordinate labels around the board
+   */
+  private drawCoordinates(): void {
+    const fontSize = Math.max(10, this.cellSize * 0.3)
+    this.ctx.setFont(`${fontSize}px sans-serif`)
+    this.ctx.setTextAlign('center')
+    this.ctx.setTextBaseline('middle')
+    this.ctx.setFillStyle(this.options.textColor)
+
+    // Column labels (A, B, C, ...)
+    for (let i = 0; i < this.boardSize; i++) {
+      const letter = String.fromCharCode(65 + i + (i >= 8 ? 1 : 0)) // Skip 'I'
+      const x = this.margin + i * this.cellSize
+
+      // Top
+      this.ctx.fillText(letter, x, this.margin / 2)
+      // Bottom
+      this.ctx.fillText(letter, x, this.options.size - this.margin / 2)
+    }
+
+    // Row labels (1, 2, 3, ...)
+    for (let i = 0; i < this.boardSize; i++) {
+      const number = (this.boardSize - i).toString()
+      const y = this.margin + i * this.cellSize
+
+      // Left
+      this.ctx.fillText(number, this.margin / 2, y)
+      // Right
+      this.ctx.fillText(number, this.options.size - this.margin / 2, y)
+    }
+  }
+
+  /**
+   * Draw a stone at the given position
+   */
+  private drawStone(position: Position, color: StoneColor): void {
+    const x = this.margin + position.x * this.cellSize
+    const y = this.margin + position.y * this.cellSize
+    const radius = this.cellSize * 0.45
+
+    // Draw stone shadow for depth
+    this.ctx.setFillStyle('rgba(0, 0, 0, 0.3)')
+    this.ctx.beginPath()
+    this.ctx.arc(x + 1, y + 1, radius, 0, Math.PI * 2)
+    this.ctx.fill()
+
+    // Draw main stone
+    const stoneColor =
+      color === 'black'
+        ? this.options.stoneColors.black
+        : this.options.stoneColors.white
+    this.ctx.setFillStyle(stoneColor)
+    this.ctx.beginPath()
+    this.ctx.arc(x, y, radius, 0, Math.PI * 2)
+    this.ctx.fill()
+
+    // Draw stone border
+    this.ctx.setStrokeStyle(this.options.lineColor)
+    this.ctx.setLineWidth(1)
+    this.ctx.stroke()
+  }
+
+  /**
+   * Draw a move label on a stone
+   */
+  private drawMoveLabel(position: Position, label: string): void {
+    const x = this.margin + position.x * this.cellSize
+    const y = this.margin + position.y * this.cellSize
+    const fontSize = Math.max(10, this.cellSize * 0.4)
+
+    this.ctx.setFont(`bold ${fontSize}px monospace`)
+    this.ctx.setTextAlign('center')
+    this.ctx.setTextBaseline('middle')
+
+    // Draw text stroke for contrast
+    this.ctx.setStrokeStyle(this.options.textStrokeColor)
+    this.ctx.setLineWidth(3)
+    this.ctx.strokeText(label, x, y)
+
+    // Draw text fill
+    this.ctx.setFillStyle(this.options.textColor)
+    this.ctx.fillText(label, x, y)
+  }
+
+  /**
+   * Get the canvas instance
+   */
+  getCanvas(): CanvasLike {
+    return this.canvas
+  }
+}

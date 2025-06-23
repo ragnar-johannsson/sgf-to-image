@@ -115,3 +115,7 @@ export class RenderError extends Error {
 
 // Re-export board-related types
 export type { ApplyMovesResult, OverwrittenLabel } from './board/applyMoves'
+
+// Re-export render-related types
+export type { CanvasLike } from './render/CanvasFactory'
+export type { RenderOptions } from './render/BoardRenderer'

@@ -18,6 +18,8 @@ export type {
   StoneColor,
   ApplyMovesResult,
   OverwrittenLabel,
+  CanvasLike,
+  RenderOptions,
 } from './types'
 
 // Re-export error classes
@@ -34,6 +36,16 @@ export {
   generateMoveLabels,
   formatOverwrittenLabels,
 } from './board/applyMoves'
+
+// Re-export rendering functionality
+export { CanvasFactory, CanvasContext } from './render/CanvasFactory'
+export { BoardRenderer, DEFAULT_RENDER_OPTIONS } from './render/BoardRenderer'
+export {
+  DiagramRenderer,
+  createDiagramRenderer,
+  renderDiagram,
+} from './render/DiagramRenderer'
+export { ImageExporter } from './render/ImageExporter'
 
 /**
  * Convert SGF file to image

@@ -45,13 +45,13 @@
   - [x] 3.5 Detect overwritten labels (e.g., ko) and produce list for caption
   - [x] 3.6 Unit tests for capturing, ko, overwritten labels, and edge cases
 
-- [ ] 4.0 Diagram rendering engine (board, stones, labels, coordinates)
-  - [ ] 4.1 Choose rendering backend (`canvas` in browser, `node-canvas` in Node)
-  - [ ] 4.2 Draw grid lines & star-points per board size
-  - [ ] 4.3 Render stones with anti-aliasing and centered numeric labels (monospaced font)
-  - [ ] 4.4 Conditionally render coordinate labels when `showCoordinates=true`
-  - [ ] 4.5 Render overwritten-label caption beneath diagram
-  - [ ] 4.6 Snapshot tests comparing output to `docs/example_diagram.png`
+- [x] 4.0 Diagram rendering engine (board, stones, labels, coordinates)
+  - [x] 4.1 Choose rendering backend (`canvas` in browser, `node-canvas` in Node)
+  - [x] 4.2 Draw grid lines & star-points per board size
+  - [x] 4.3 Render stones with anti-aliasing and centered numeric labels (monospaced font)
+  - [x] 4.4 Conditionally render coordinate labels when `showCoordinates=true`
+  - [x] 4.5 Render overwritten-label caption beneath diagram
+  - [x] 4.6 Snapshot tests comparing output to `docs/example_diagram.png`
 
 - [ ] 5.0 Image export, size presets, and performance optimization
   - [ ] 5.1 Define preset resolutions: small 480×480, medium 1080×1080, large 2160×2160
