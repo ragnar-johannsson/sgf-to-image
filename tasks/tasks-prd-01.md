@@ -2,15 +2,17 @@
 
 - `src/index.ts` – Public API entry point exposing the main conversion function and types
 - `src/types.ts` – Shared TypeScript type definitions (options, enums, error types)
+- `src/types/sabaki-sgf.d.ts` – Type declarations for @sabaki/sgf module
 - `src/sgf/parseSgf.ts` – Functions for accepting raw SGF/string/File path/Blob and returning a parsed tree (uses `@sabaki/sgf`)
-- `src/model/Board.ts` – Immutable board representation & utility methods (play move, clone, etc.)
-- `src/model/labels.ts` – Logic for assigning numeric labels & handling overwritten labels
-- `src/render/canvasRenderer.ts` – Low-level drawing routines for board grid, stones, labels, coordinates (using `canvas`/`node-canvas`)
-- `src/render/exportImage.ts` – Converts canvas to PNG or JPEG, applies preset sizes & image-quality settings
 - `tests/sgf/parseSgf.test.ts` – Unit tests for SGF parsing & input handling
-- `tests/model/Board.test.ts` – Unit tests for board state & move application
-- `tests/render/render.test.ts` – Snapshot tests comparing generated diagrams to fixtures
+- `tests/index.test.ts` – Basic API tests for the main entry point
 - `vitest.config.ts` – Test runner configuration
+- `package.json` – Project configuration with dependencies and scripts
+- `tsconfig.json` – TypeScript configuration with strict type checking
+- `.eslintrc.json` – ESLint configuration for code quality
+- `.prettierrc` – Code formatting configuration
+- `vite.config.ts` – Build configuration for ESM/CJS library output
+- `.github/workflows/ci.yml` – CI/CD pipeline for automated testing
 
 ### Notes
 
@@ -28,12 +30,12 @@
   - [x] 1.5 Add GitHub Actions (Node 18 & 20) for lint, test, and type-check steps
   - [x] 1.6 Create a basic `README.md` with install & usage examples
 
-- [ ] 2.0 SGF input handling and parsing
-  - [ ] 2.1 Install `@sabaki/sgf`
-  - [ ] 2.2 Implement `parseSgf(input: SgfInput): ParsedGame` to support string, file path, and Blob/File
-  - [ ] 2.3 Ignore variation branches; extract main sequence moves only
-  - [ ] 2.4 Validate board size and throw `InvalidSgfError` for unsupported sizes
-  - [ ] 2.5 Write unit tests covering all accepted input types & error cases
+- [x] 2.0 SGF input handling and parsing
+  - [x] 2.1 Install `@sabaki/sgf`
+  - [x] 2.2 Implement `parseSgf(input: SgfInput): ParsedGame` to support string, file path, and Blob/File
+  - [x] 2.3 Ignore variation branches; extract main sequence moves only
+  - [x] 2.4 Validate board size and throw `InvalidSgfError` for unsupported sizes
+  - [x] 2.5 Write unit tests covering all accepted input types & error cases
 
 - [ ] 3.0 Board model and move selection logic
   - [ ] 3.1 Design immutable `Board` class supporting arbitrary board sizes

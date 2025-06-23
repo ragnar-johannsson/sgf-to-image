@@ -1,28 +1,37 @@
 // Main entry point for sgf-to-image library
-// This is a placeholder that will be implemented in subsequent tasks
 
-export interface ConvertOptions {
-  sgf: string | File | Blob
-  size: 'small' | 'medium' | 'large' | { width: number; height: number }
-  format: 'png' | 'jpeg'
-  moveRange?: [number, number]
-  showCoordinates?: boolean
-  quality?: number
-}
+import type { ConvertOptions, ImageResult } from './types'
 
-export interface ImageResult {
-  imageBuffer: Buffer
-  overwrittenLabels: string[]
-  boardSize: number
-  totalMoves: number
-}
+// Re-export types from types module
+export type {
+  ConvertOptions,
+  ImageResult,
+  SgfInput,
+  ImageFormat,
+  Size,
+  SizePreset,
+  CustomSize,
+  ParsedGame,
+  Move,
+  Position,
+  GameInfo,
+  StoneColor,
+} from './types'
+
+// Re-export error classes
+export { InvalidSgfError, RenderError } from './types'
+
+// Re-export SGF parsing functionality
+export { parseSgf } from './sgf/parseSgf'
 
 /**
  * Convert SGF file to image
  * TODO: Implement this function in future tasks
  */
 export async function convertSgfToImage(
-  _options: ConvertOptions
+  options: ConvertOptions
 ): Promise<ImageResult> {
+  // TODO: Use options parameter when implementing the function
+  void options // Acknowledge parameter to avoid unused variable warning
   throw new Error('Not implemented yet')
 }
