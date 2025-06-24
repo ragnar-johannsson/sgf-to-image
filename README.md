@@ -5,7 +5,7 @@ Convert SGF (Smart Game Format) files to high-quality PNG/JPEG diagrams for Go/B
 [![npm version](https://badge.fury.io/js/sgf-to-image.svg)](https://www.npmjs.com/package/sgf-to-image)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 
-![Diagram](https://github.com/ragnar-johannsson/sgf-to-image/blob/master/image.jpg?raw=true)
+![Diagram](https://raw.githubusercontent.com/ragnar-johannsson/sgf-to-image/refs/heads/master/diagram.png)
 
 
 ## Features
