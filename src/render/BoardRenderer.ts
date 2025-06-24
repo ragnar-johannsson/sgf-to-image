@@ -1,6 +1,7 @@
 import { CanvasContext, type CanvasLike } from './CanvasFactory'
 import type { Board } from '../board/Board'
-import type { Position, StoneColor } from '../types'
+import type { Position, StoneColor, Markup } from '../types'
+import { LabelType } from '../types'
 
 /**
  * Configuration options for board rendering
@@ -129,7 +130,11 @@ export class BoardRenderer {
   /**
    * Render move labels on stones
    */
-  renderMoveLabels(labels: Map<string, number>, board?: Board): void {
+  renderMoveLabels(
+    labels: Map<string, number>,
+    board?: Board,
+    labelType: LabelType = LabelType.Numeric
+  ): void {
     for (const [positionKey, label] of labels.entries()) {
       const [x, y] = positionKey.split(',').map(Number)
       const position = { x, y }
@@ -141,7 +146,34 @@ export class BoardRenderer {
         }
         stoneColor = color
       }
-      this.drawMoveLabel(position, label.toString(), stoneColor)
+      this.drawMoveLabel(position, label.toString(), stoneColor, labelType)
+    }
+  }
+
+  /**
+   * Render markup shapes and labels on the board
+   */
+  renderMarkup(markup: Markup[], board?: Board): void {
+    for (const mark of markup) {
+      let stoneColor: StoneColor = 'empty'
+      if (board) {
+        stoneColor = board.getStone(mark.position)
+      }
+
+      switch (mark.type) {
+        case 'circle':
+          this.drawMarkupShape(mark.position, 'circle', stoneColor)
+          break
+        case 'square':
+          this.drawMarkupShape(mark.position, 'square', stoneColor)
+          break
+        case 'triangle':
+          this.drawMarkupShape(mark.position, 'triangle', stoneColor)
+          break
+        case 'label':
+          this.drawMarkupLabel(mark.position, mark.text || '', stoneColor)
+          break
+      }
     }
   }
 
@@ -307,11 +339,9 @@ export class BoardRenderer {
   private drawMoveLabel(
     position: Position,
     label: string,
-    stoneColor: StoneColor
+    stoneColor: StoneColor,
+    labelType: LabelType = LabelType.Numeric
   ): void {
-    const x = this.margin + position.x * this.cellSize
-    const y = this.margin + position.y * this.cellSize
-
     // Check if this is a special last move label
     const labelNum = parseInt(label, 10)
     if (labelNum === -1) {
@@ -320,15 +350,29 @@ export class BoardRenderer {
       return
     }
 
-    const fontSize = Math.max(10, this.cellSize * 0.4)
+    // Convert label text based on label type
+    const displayText = this.convertLabelToText(label, labelType)
 
-    this.ctx.setFont(`bold ${fontSize}px monospace`)
-    this.ctx.setTextAlign('center')
-    this.ctx.setTextBaseline('middle')
-
-    const fillColor = stoneColor === 'black' ? '#ffffff' : '#000000'
-    this.ctx.setFillStyle(fillColor)
-    this.ctx.fillText(label, x, y)
+    // Handle different label rendering modes
+    switch (labelType) {
+      case LabelType.Circle:
+        this.drawMarkupShape(position, 'circle', stoneColor)
+        this.drawTextLabel(position, displayText, stoneColor)
+        break
+      case LabelType.Square:
+        this.drawMarkupShape(position, 'square', stoneColor)
+        this.drawTextLabel(position, displayText, stoneColor)
+        break
+      case LabelType.Triangle:
+        this.drawMarkupShape(position, 'triangle', stoneColor)
+        this.drawTextLabel(position, displayText, stoneColor)
+        break
+      case LabelType.Numeric:
+      case LabelType.Letters:
+      default:
+        this.drawTextLabel(position, displayText, stoneColor)
+        break
+    }
   }
 
   /**
@@ -353,6 +397,127 @@ export class BoardRenderer {
     this.ctx.setStrokeStyle(stoneColor === 'black' ? '#000000' : '#ffffff')
     this.ctx.setLineWidth(1)
     this.ctx.stroke()
+  }
+
+  /**
+   * Draw markup shapes (circle, square, triangle) on the board
+   */
+  private drawMarkupShape(
+    position: Position,
+    shape: 'circle' | 'square' | 'triangle',
+    stoneColor: StoneColor
+  ): void {
+    const x = this.margin + position.x * this.cellSize
+    const y = this.margin + position.y * this.cellSize
+    const size = this.cellSize * 0.3
+
+    // Choose appropriate stroke/fill colors based on background
+    const strokeColor =
+      stoneColor === 'empty'
+        ? this.options.lineColor
+        : stoneColor === 'black'
+          ? '#ffffff'
+          : '#000000'
+    const fillColor = 'transparent'
+
+    this.ctx.setStrokeStyle(strokeColor)
+    this.ctx.setLineWidth(2)
+    this.ctx.setFillStyle(fillColor)
+
+    switch (shape) {
+      case 'circle':
+        this.ctx.beginPath()
+        this.ctx.arc(x, y, size, 0, Math.PI * 2)
+        this.ctx.stroke()
+        break
+
+      case 'square':
+        this.ctx.beginPath()
+        this.ctx.moveTo(x - size, y - size) // top left
+        this.ctx.lineTo(x + size, y - size) // top right
+        this.ctx.lineTo(x + size, y + size) // bottom right
+        this.ctx.lineTo(x - size, y + size) // bottom left
+        this.ctx.lineTo(x - size, y - size) // back to top left
+        this.ctx.stroke()
+        break
+
+      case 'triangle':
+        this.ctx.beginPath()
+        this.ctx.moveTo(x, y - size) // top point
+        this.ctx.lineTo(x - size, y + size) // bottom left
+        this.ctx.lineTo(x + size, y + size) // bottom right
+        this.ctx.lineTo(x, y - size) // back to top
+        this.ctx.stroke()
+        break
+    }
+  }
+
+  /**
+   * Draw markup label text on the board
+   */
+  private drawMarkupLabel(
+    position: Position,
+    text: string,
+    stoneColor: StoneColor
+  ): void {
+    const x = this.margin + position.x * this.cellSize
+    const y = this.margin + position.y * this.cellSize
+    const fontSize = Math.max(10, this.cellSize * 0.4)
+
+    this.ctx.setFont(`bold ${fontSize}px monospace`)
+    this.ctx.setTextAlign('center')
+    this.ctx.setTextBaseline('middle')
+
+    // Choose text color based on background
+    const fillColor =
+      stoneColor === 'empty'
+        ? this.options.textColor
+        : stoneColor === 'black'
+          ? '#ffffff'
+          : '#000000'
+
+    this.ctx.setFillStyle(fillColor)
+    this.ctx.fillText(text, x, y)
+  }
+
+  /**
+   * Draw text label at position with monospaced font
+   */
+  private drawTextLabel(
+    position: Position,
+    text: string,
+    stoneColor: StoneColor
+  ): void {
+    const x = this.margin + position.x * this.cellSize
+    const y = this.margin + position.y * this.cellSize
+    const fontSize = Math.max(10, this.cellSize * 0.4)
+
+    this.ctx.setFont(`bold ${fontSize}px monospace`)
+    this.ctx.setTextAlign('center')
+    this.ctx.setTextBaseline('middle')
+
+    const fillColor = stoneColor === 'black' ? '#ffffff' : '#000000'
+    this.ctx.setFillStyle(fillColor)
+    this.ctx.fillText(text, x, y)
+  }
+
+  /**
+   * Convert numeric label to letter based on label type
+   */
+  private convertLabelToText(label: string, labelType: LabelType): string {
+    const labelNum = parseInt(label, 10)
+
+    switch (labelType) {
+      case LabelType.Letters:
+        if (labelNum >= 1 && labelNum <= 26) {
+          return String.fromCharCode(64 + labelNum) // A, B, C...
+        }
+        return label // fallback to original
+
+      case LabelType.Numeric:
+      default:
+        return label
+    }
   }
 
   /**

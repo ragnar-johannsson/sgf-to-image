@@ -40,6 +40,8 @@ export interface ConvertOptions {
   lastMoveLabel?: boolean // Whether to label the last move played
   showCoordinates?: boolean
   quality?: number
+  labelType?: LabelType // How to render move labels (numeric, circle, square, triangle, letters)
+  labelText?: string // Custom text for labels (overrides automatic numbering/lettering)
 }
 
 /**
@@ -59,6 +61,7 @@ export interface ParsedGame {
   boardSize: number
   moves: Move[]
   gameInfo: GameInfo
+  markup: Markup[]
 }
 
 /**
@@ -88,6 +91,31 @@ export interface Move {
 export interface Position {
   x: number // 0-based, left to right
   y: number // 0-based, top to bottom
+}
+
+/**
+ * Markup types supported by SGF
+ */
+export type MarkupType = 'circle' | 'square' | 'triangle' | 'label'
+
+/**
+ * Label rendering modes for move numbers and text
+ */
+export enum LabelType {
+  Numeric = 'numeric', // Default: 1, 2, 3...
+  Circle = 'circle', // Numbers/text inside circles
+  Square = 'square', // Numbers/text inside squares
+  Triangle = 'triangle', // Numbers/text inside triangles
+  Letters = 'letters', // A, B, C... instead of numbers
+}
+
+/**
+ * Markup annotation on the board
+ */
+export interface Markup {
+  type: MarkupType
+  position: Position
+  text?: string // For label type markup
 }
 
 /**

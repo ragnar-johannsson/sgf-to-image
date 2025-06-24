@@ -171,6 +171,117 @@ describe('parseSgf', () => {
     })
   })
 
+  describe('Markup parsing', () => {
+    it('should parse circle markup (CR)', async () => {
+      const sgfContent = '(;FF[4]GM[1]SZ[19]CR[pd][qq];B[pd])'
+      const result = await parseSgf(sgfContent)
+
+      expect(result.markup).toHaveLength(2)
+      expect(result.markup[0]).toEqual({
+        type: 'circle',
+        position: { x: 14, y: 3 }, // pd
+      })
+      expect(result.markup[1]).toEqual({
+        type: 'circle',
+        position: { x: 15, y: 15 }, // qq
+      })
+    })
+
+    it('should parse square markup (SQ)', async () => {
+      const sgfContent = '(;FF[4]GM[1]SZ[19]SQ[dd][dp];B[pd])'
+      const result = await parseSgf(sgfContent)
+
+      expect(result.markup).toHaveLength(2)
+      expect(result.markup[0]).toEqual({
+        type: 'square',
+        position: { x: 3, y: 3 }, // dd
+      })
+      expect(result.markup[1]).toEqual({
+        type: 'square',
+        position: { x: 3, y: 14 }, // dp
+      })
+    })
+
+    it('should parse triangle markup (TR)', async () => {
+      const sgfContent = '(;FF[4]GM[1]SZ[19]TR[pd][pp];B[pd])'
+      const result = await parseSgf(sgfContent)
+
+      expect(result.markup).toHaveLength(2)
+      expect(result.markup[0]).toEqual({
+        type: 'triangle',
+        position: { x: 14, y: 3 }, // pd
+      })
+      expect(result.markup[1]).toEqual({
+        type: 'triangle',
+        position: { x: 14, y: 14 }, // pp
+      })
+    })
+
+    it('should parse label markup (LB)', async () => {
+      const sgfContent = '(;FF[4]GM[1]SZ[19]LB[pd:A][qq:B][dd:123];B[pd])'
+      const result = await parseSgf(sgfContent)
+
+      expect(result.markup).toHaveLength(3)
+      expect(result.markup[0]).toEqual({
+        type: 'label',
+        position: { x: 14, y: 3 }, // pd
+        text: 'A',
+      })
+      expect(result.markup[1]).toEqual({
+        type: 'label',
+        position: { x: 15, y: 15 }, // qq
+        text: 'B',
+      })
+      expect(result.markup[2]).toEqual({
+        type: 'label',
+        position: { x: 3, y: 3 }, // dd
+        text: '123',
+      })
+    })
+
+    it('should parse mixed markup types', async () => {
+      const sgfContent = '(;FF[4]GM[1]SZ[19]CR[pd]SQ[qq]TR[dp]LB[dd:X];B[pd])'
+      const result = await parseSgf(sgfContent)
+
+      expect(result.markup).toHaveLength(4)
+      expect(result.markup.map((m) => m.type)).toEqual([
+        'circle',
+        'square',
+        'triangle',
+        'label',
+      ])
+    })
+
+    it('should parse markup from multiple nodes', async () => {
+      const sgfContent = '(;FF[4]GM[1]SZ[19]CR[pd];B[dd]SQ[qq];W[dp]LB[pp:A])'
+      const result = await parseSgf(sgfContent)
+
+      expect(result.markup).toHaveLength(3)
+      expect(result.markup[0].type).toBe('circle')
+      expect(result.markup[1].type).toBe('square')
+      expect(result.markup[2].type).toBe('label')
+    })
+
+    it('should handle labels with colons in text', async () => {
+      const sgfContent = '(;FF[4]GM[1]SZ[19]LB[pd:A:B:C];B[pd])'
+      const result = await parseSgf(sgfContent)
+
+      expect(result.markup).toHaveLength(1)
+      expect(result.markup[0]).toEqual({
+        type: 'label',
+        position: { x: 14, y: 3 }, // pd
+        text: 'A:B:C',
+      })
+    })
+
+    it('should return empty markup array when no markup present', async () => {
+      const sgfContent = '(;FF[4]GM[1]SZ[19];B[pd];W[dp])'
+      const result = await parseSgf(sgfContent)
+
+      expect(result.markup).toEqual([])
+    })
+  })
+
   describe('Error handling', () => {
     it('should throw error for invalid input type', async () => {
       // @ts-expect-error - Testing invalid input type

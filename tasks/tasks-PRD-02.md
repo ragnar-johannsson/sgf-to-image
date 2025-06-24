@@ -32,12 +32,12 @@
   - [x] 1.4 Expose `move`, `range`, and `lastMoveLabel` options in `DiagramRenderer.ts`
   - [x] 1.5 Update and add tests in `tests/board/` & `tests/render/` to cover range/snapshot scenarios
 
-- [ ] 2.0 Implement alternate label rendering (circle, square, triangle, letters)
-  - [ ] 2.1 Extend `parseSgf.ts` to parse `CR`, `SQ`, `TR`, and `LB` SGF properties
-  - [ ] 2.2 Add `LabelType` enum & related options to `types.ts`
-  - [ ] 2.3 Update `BoardRenderer.ts` to render shapes and letters with correct stroke/fill color
-  - [ ] 2.4 Ensure letter glyphs use monospaced font and are centered on stones
-  - [ ] 2.5 Create unit tests for each label type in `tests/render/BoardRenderer.test.ts`
+- [x] 2.0 Implement alternate label rendering (circle, square, triangle, letters)
+  - [x] 2.1 Extend `parseSgf.ts` to parse `CR`, `SQ`, `TR`, and `LB` SGF properties
+  - [x] 2.2 Add `LabelType` enum & related options to `types.ts`
+  - [x] 2.3 Update `BoardRenderer.ts` to render shapes and letters with correct stroke/fill color
+  - [x] 2.4 Ensure letter glyphs use monospaced font and are centered on stones
+  - [x] 2.5 Create unit tests for each label type in `tests/render/BoardRenderer.test.ts`
 
 - [ ] 3.0 Build CLI executable (`npx sgf-to-image`)
   - [ ] 3.1 Create `bin/sgf-to-image.js` with shebang and delegate logic to `src/cli.ts`

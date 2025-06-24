@@ -6,7 +6,8 @@ import {
 import { Board } from '../../src/board/Board'
 import { CanvasFactory } from '../../src/render/CanvasFactory'
 import { applyMoves, generateMoveLabels } from '../../src/board/applyMoves'
-import type { Move } from '../../src/types'
+import type { Move, Markup } from '../../src/types'
+import { LabelType } from '../../src/types'
 
 describe('BoardRenderer', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -210,6 +211,298 @@ describe('BoardRenderer', () => {
         renderer.renderStones(board) // empty board
         renderer.renderMoveLabels(labelsWithEmptyPositions, board)
       }).not.toThrow()
+    })
+  })
+
+  describe('Label type rendering', () => {
+    let board: Board
+    let labels: Map<string, number>
+
+    beforeEach(() => {
+      board = Board.empty(9)
+        .placeStone({ x: 2, y: 2 }, 'black')
+        .placeStone({ x: 3, y: 3 }, 'white')
+        .placeStone({ x: 4, y: 4 }, 'black')
+
+      labels = new Map([
+        ['2,2', 1],
+        ['3,3', 2],
+        ['4,4', 3],
+      ])
+    })
+
+    it('should render numeric labels (default)', () => {
+      expect(() => {
+        renderer.renderMoveLabels(labels, board, LabelType.Numeric)
+      }).not.toThrow()
+
+      // Should call fillText with numeric labels
+      expect(mockContext.fillText).toHaveBeenCalledWith(
+        '1',
+        expect.any(Number),
+        expect.any(Number)
+      )
+      expect(mockContext.fillText).toHaveBeenCalledWith(
+        '2',
+        expect.any(Number),
+        expect.any(Number)
+      )
+      expect(mockContext.fillText).toHaveBeenCalledWith(
+        '3',
+        expect.any(Number),
+        expect.any(Number)
+      )
+    })
+
+    it('should render letter labels', () => {
+      expect(() => {
+        renderer.renderMoveLabels(labels, board, LabelType.Letters)
+      }).not.toThrow()
+
+      // Should call fillText with letter labels (A, B, C)
+      expect(mockContext.fillText).toHaveBeenCalledWith(
+        'A',
+        expect.any(Number),
+        expect.any(Number)
+      )
+      expect(mockContext.fillText).toHaveBeenCalledWith(
+        'B',
+        expect.any(Number),
+        expect.any(Number)
+      )
+      expect(mockContext.fillText).toHaveBeenCalledWith(
+        'C',
+        expect.any(Number),
+        expect.any(Number)
+      )
+    })
+
+    it('should render circle labels', () => {
+      expect(() => {
+        renderer.renderMoveLabels(labels, board, LabelType.Circle)
+      }).not.toThrow()
+
+      // Should draw circles (arc) and text
+      expect(mockContext.arc).toHaveBeenCalledTimes(3) // one for each label
+      expect(mockContext.stroke).toHaveBeenCalled()
+      expect(mockContext.fillText).toHaveBeenCalledTimes(3) // one for each label text
+    })
+
+    it('should render square labels', () => {
+      expect(() => {
+        renderer.renderMoveLabels(labels, board, LabelType.Square)
+      }).not.toThrow()
+
+      // Should draw squares using moveTo/lineTo and text
+      expect(mockContext.moveTo).toHaveBeenCalled()
+      expect(mockContext.lineTo).toHaveBeenCalled()
+      expect(mockContext.stroke).toHaveBeenCalled()
+      expect(mockContext.fillText).toHaveBeenCalledTimes(3) // one for each label text
+    })
+
+    it('should render triangle labels', () => {
+      expect(() => {
+        renderer.renderMoveLabels(labels, board, LabelType.Triangle)
+      }).not.toThrow()
+
+      // Should draw triangles using moveTo/lineTo and text
+      expect(mockContext.moveTo).toHaveBeenCalled()
+      expect(mockContext.lineTo).toHaveBeenCalled()
+      expect(mockContext.stroke).toHaveBeenCalled()
+      expect(mockContext.fillText).toHaveBeenCalledTimes(3) // one for each label text
+    })
+
+    it('should use monospaced font for all label types', () => {
+      const labelTypes = [
+        LabelType.Numeric,
+        LabelType.Letters,
+        LabelType.Circle,
+        LabelType.Square,
+        LabelType.Triangle,
+      ]
+
+      for (const labelType of labelTypes) {
+        // Reset mock to check font setting for each type
+        vi.clearAllMocks()
+
+        renderer.renderMoveLabels(labels, board, labelType)
+
+        // Should set monospaced font
+        expect(mockContext.font).toMatch(/monospace/)
+      }
+    })
+
+    it('should handle letters beyond A-Z gracefully', () => {
+      const largeLabels = new Map([
+        ['2,2', 27], // Beyond Z
+        ['3,3', 28],
+      ])
+
+      expect(() => {
+        renderer.renderMoveLabels(largeLabels, board, LabelType.Letters)
+      }).not.toThrow()
+
+      // Should fallback to original numeric labels for numbers > 26
+      expect(mockContext.fillText).toHaveBeenCalledWith(
+        '27',
+        expect.any(Number),
+        expect.any(Number)
+      )
+      expect(mockContext.fillText).toHaveBeenCalledWith(
+        '28',
+        expect.any(Number),
+        expect.any(Number)
+      )
+    })
+  })
+
+  describe('Markup rendering', () => {
+    let board: Board
+
+    beforeEach(() => {
+      board = Board.empty(9)
+        .placeStone({ x: 2, y: 2 }, 'black')
+        .placeStone({ x: 3, y: 3 }, 'white')
+    })
+
+    it('should render circle markup', () => {
+      const markup: Markup[] = [
+        { type: 'circle', position: { x: 2, y: 2 } },
+        { type: 'circle', position: { x: 3, y: 3 } },
+      ]
+
+      expect(() => {
+        renderer.renderMarkup(markup, board)
+      }).not.toThrow()
+
+      // Should draw circles
+      expect(mockContext.arc).toHaveBeenCalledTimes(2)
+      expect(mockContext.stroke).toHaveBeenCalled()
+    })
+
+    it('should render square markup', () => {
+      const markup: Markup[] = [
+        { type: 'square', position: { x: 2, y: 2 } },
+        { type: 'square', position: { x: 3, y: 3 } },
+      ]
+
+      expect(() => {
+        renderer.renderMarkup(markup, board)
+      }).not.toThrow()
+
+      // Should draw squares using moveTo/lineTo
+      expect(mockContext.moveTo).toHaveBeenCalled()
+      expect(mockContext.lineTo).toHaveBeenCalled()
+      expect(mockContext.stroke).toHaveBeenCalled()
+    })
+
+    it('should render triangle markup', () => {
+      const markup: Markup[] = [
+        { type: 'triangle', position: { x: 2, y: 2 } },
+        { type: 'triangle', position: { x: 3, y: 3 } },
+      ]
+
+      expect(() => {
+        renderer.renderMarkup(markup, board)
+      }).not.toThrow()
+
+      // Should draw triangles using moveTo/lineTo
+      expect(mockContext.moveTo).toHaveBeenCalled()
+      expect(mockContext.lineTo).toHaveBeenCalled()
+      expect(mockContext.stroke).toHaveBeenCalled()
+    })
+
+    it('should render label markup', () => {
+      const markup: Markup[] = [
+        { type: 'label', position: { x: 2, y: 2 }, text: 'A' },
+        { type: 'label', position: { x: 3, y: 3 }, text: 'B' },
+      ]
+
+      expect(() => {
+        renderer.renderMarkup(markup, board)
+      }).not.toThrow()
+
+      // Should render text labels
+      expect(mockContext.fillText).toHaveBeenCalledWith(
+        'A',
+        expect.any(Number),
+        expect.any(Number)
+      )
+      expect(mockContext.fillText).toHaveBeenCalledWith(
+        'B',
+        expect.any(Number),
+        expect.any(Number)
+      )
+    })
+
+    it('should handle mixed markup types', () => {
+      const markup: Markup[] = [
+        { type: 'circle', position: { x: 1, y: 1 } },
+        { type: 'square', position: { x: 2, y: 2 } },
+        { type: 'triangle', position: { x: 3, y: 3 } },
+        { type: 'label', position: { x: 4, y: 4 }, text: 'X' },
+      ]
+
+      expect(() => {
+        renderer.renderMarkup(markup, board)
+      }).not.toThrow()
+
+      // Should call appropriate methods for each markup type
+      expect(mockContext.arc).toHaveBeenCalled() // circle
+      expect(mockContext.moveTo).toHaveBeenCalled() // square and triangle
+      expect(mockContext.lineTo).toHaveBeenCalled() // square and triangle
+      expect(mockContext.fillText).toHaveBeenCalledWith(
+        'X',
+        expect.any(Number),
+        expect.any(Number)
+      )
+    })
+
+    it('should handle markup on empty positions', () => {
+      const markup: Markup[] = [
+        { type: 'circle', position: { x: 5, y: 5 } }, // empty position
+        { type: 'label', position: { x: 6, y: 6 }, text: 'E' }, // empty position
+      ]
+
+      expect(() => {
+        renderer.renderMarkup(markup, board)
+      }).not.toThrow()
+
+      // Should still render markup on empty positions
+      expect(mockContext.arc).toHaveBeenCalled()
+      expect(mockContext.fillText).toHaveBeenCalledWith(
+        'E',
+        expect.any(Number),
+        expect.any(Number)
+      )
+    })
+
+    it('should use appropriate colors for markup on different backgrounds', () => {
+      const markup: Markup[] = [
+        { type: 'circle', position: { x: 2, y: 2 } }, // black stone
+        { type: 'circle', position: { x: 3, y: 3 } }, // white stone
+        { type: 'circle', position: { x: 5, y: 5 } }, // empty
+      ]
+
+      expect(() => {
+        renderer.renderMarkup(markup, board)
+      }).not.toThrow()
+
+      // Should set stroke styles - exact values depend on implementation
+      expect(mockContext.strokeStyle).toBeDefined()
+    })
+
+    it('should handle empty markup array', () => {
+      const markup: Markup[] = []
+
+      expect(() => {
+        renderer.renderMarkup(markup, board)
+      }).not.toThrow()
+
+      // Should not call any drawing methods
+      expect(mockContext.arc).not.toHaveBeenCalled()
+      expect(mockContext.moveTo).not.toHaveBeenCalled()
+      expect(mockContext.fillText).not.toHaveBeenCalled()
     })
   })
 })

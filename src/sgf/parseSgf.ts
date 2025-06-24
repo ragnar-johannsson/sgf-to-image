@@ -1,6 +1,13 @@
 import sgf from '@sabaki/sgf'
 import type { GameTreeNode } from '@sabaki/sgf'
-import type { SgfInput, ParsedGame, Move, GameInfo, Position } from '../types'
+import type {
+  SgfInput,
+  ParsedGame,
+  Move,
+  GameInfo,
+  Position,
+  Markup,
+} from '../types'
 import { InvalidSgfError } from '../types'
 
 // Function to get fs readFileSync for Node.js environments
@@ -93,10 +100,14 @@ export async function parseSgf(input: SgfInput): Promise<ParsedGame> {
   // Extract main sequence moves (ignore variations)
   const moves = extractMainSequenceMoves(rootNode)
 
+  // Extract markup annotations from all nodes
+  const markup = extractMarkup(rootNode)
+
   return {
     boardSize,
     moves,
     gameInfo,
+    markup,
   }
 }
 
@@ -276,4 +287,87 @@ function sgfPosToCoord(char: string): number {
   } else {
     throw new InvalidSgfError(`Invalid SGF coordinate character: ${char}`)
   }
+}
+
+/**
+ * Extract markup annotations from all nodes in the tree
+ */
+function extractMarkup(rootNode: GameTreeNode): Markup[] {
+  const markup: Markup[] = []
+  const visitedNodes = new Set<GameTreeNode>()
+
+  function extractMarkupFromNode(node: GameTreeNode): void {
+    if (visitedNodes.has(node)) return
+    visitedNodes.add(node)
+
+    const data = node.data
+
+    // Extract circle markup (CR)
+    if (data.CR) {
+      for (const posStr of data.CR) {
+        const position = parsePosition(posStr)
+        if (position) {
+          markup.push({
+            type: 'circle',
+            position,
+          })
+        }
+      }
+    }
+
+    // Extract square markup (SQ)
+    if (data.SQ) {
+      for (const posStr of data.SQ) {
+        const position = parsePosition(posStr)
+        if (position) {
+          markup.push({
+            type: 'square',
+            position,
+          })
+        }
+      }
+    }
+
+    // Extract triangle markup (TR)
+    if (data.TR) {
+      for (const posStr of data.TR) {
+        const position = parsePosition(posStr)
+        if (position) {
+          markup.push({
+            type: 'triangle',
+            position,
+          })
+        }
+      }
+    }
+
+    // Extract label markup (LB)
+    if (data.LB) {
+      for (const labelStr of data.LB) {
+        // LB format: position:label (e.g., "dd:A" for position dd with label "A")
+        const parts = labelStr.split(':')
+        if (parts.length >= 2) {
+          const position = parsePosition(parts[0])
+          const text = parts.slice(1).join(':') // Handle labels with colons
+          if (position && text) {
+            markup.push({
+              type: 'label',
+              position,
+              text,
+            })
+          }
+        }
+      }
+    }
+
+    // Recursively process all children
+    if (node.children) {
+      for (const child of node.children) {
+        extractMarkupFromNode(child)
+      }
+    }
+  }
+
+  extractMarkupFromNode(rootNode)
+  return markup
 }
