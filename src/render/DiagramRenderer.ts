@@ -79,7 +79,7 @@ export class DiagramRenderer {
       // Render the complete diagram
       renderer.renderBoard()
       renderer.renderStones(moveResult.board)
-      renderer.renderMoveLabels(labels)
+      renderer.renderMoveLabels(labels, moveResult.board)
       renderer.renderOverwrittenLabels(overwrittenLabels)
 
       return canvas

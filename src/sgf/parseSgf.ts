@@ -3,16 +3,20 @@ import type { GameTreeNode } from '@sabaki/sgf'
 import type { SgfInput, ParsedGame, Move, GameInfo, Position } from '../types'
 import { InvalidSgfError } from '../types'
 
-// Conditionally import fs for Node.js environments
-let readFileSync: typeof import('fs').readFileSync | undefined
+// Function to get fs readFileSync for Node.js environments
+async function getReadFileSync(): Promise<
+  typeof import('fs').readFileSync | undefined
+> {
+  if (typeof window !== 'undefined') {
+    return undefined // Browser environment
+  }
 
-// Check if we're in Node.js environment and try to load fs
-if (typeof window === 'undefined') {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    readFileSync = require('fs').readFileSync
+    // Use dynamic import for ES modules
+    const fs = await import('fs')
+    return fs.readFileSync
   } catch {
-    // fs not available
+    return undefined // fs not available
   }
 }
 
@@ -40,6 +44,7 @@ export async function parseSgf(input: SgfInput): Promise<ParsedGame> {
     } else {
       // Assume it's a file path - read and parse
       try {
+        const readFileSync = await getReadFileSync()
         if (!readFileSync) {
           throw new Error(
             'File system access not available in browser environment'
@@ -217,8 +222,8 @@ function parsePosition(sgfPos: string): Position | null {
  * Convert SGF position character to numeric coordinate
  */
 function sgfPosToCoord(char: string): number {
-  // SGF coordinates: a-h, j-t (skipping i) for 19x19 board
-  const coordMap: Record<string, number> = {
+  // Standard SGF coordinates: a-h, j-t (skipping i) for 19x19 board
+  const standardCoordMap: Record<string, number> = {
     a: 0,
     b: 1,
     c: 2,
@@ -240,8 +245,34 @@ function sgfPosToCoord(char: string): number {
     t: 18,
   }
 
-  if (char in coordMap) {
-    return coordMap[char]
+  // Alternative SGF coordinates: a-s (including i) for 19x19 board
+  const alternativeCoordMap: Record<string, number> = {
+    a: 0,
+    b: 1,
+    c: 2,
+    d: 3,
+    e: 4,
+    f: 5,
+    g: 6,
+    h: 7,
+    i: 8,
+    j: 9,
+    k: 10,
+    l: 11,
+    m: 12,
+    n: 13,
+    o: 14,
+    p: 15,
+    q: 16,
+    r: 17,
+    s: 18,
+  }
+
+  // Try standard mapping first, then alternative
+  if (char in standardCoordMap) {
+    return standardCoordMap[char]
+  } else if (char in alternativeCoordMap) {
+    return alternativeCoordMap[char]
   } else {
     throw new InvalidSgfError(`Invalid SGF coordinate character: ${char}`)
   }

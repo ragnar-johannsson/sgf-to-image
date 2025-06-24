@@ -24,7 +24,7 @@ export interface RenderOptions {
 export const DEFAULT_RENDER_OPTIONS: RenderOptions = {
   size: 480,
   showCoordinates: false,
-  backgroundColor: '#f4c470', // Light wood color
+  backgroundColor: '#ffffff',
   lineColor: '#000000',
   stoneColors: {
     black: '#000000',
@@ -86,8 +86,9 @@ export class BoardRenderer {
     this.boardSize = boardSize
     this.options = { ...DEFAULT_RENDER_OPTIONS, ...options }
 
-    // Calculate cell size and margin
-    const coordinateSpace = this.options.showCoordinates ? 40 : 20
+    // Calculate cell size and margin. Use a generous margin to ensure stones on
+    // the first/last lines never clip the image edge.
+    const coordinateSpace = this.options.showCoordinates ? 50 : 40
     const availableSpace = this.options.size - coordinateSpace * 2
     this.cellSize = availableSpace / (boardSize - 1)
     this.margin = coordinateSpace
@@ -128,11 +129,19 @@ export class BoardRenderer {
   /**
    * Render move labels on stones
    */
-  renderMoveLabels(labels: Map<string, number>): void {
+  renderMoveLabels(labels: Map<string, number>, board?: Board): void {
     for (const [positionKey, label] of labels.entries()) {
       const [x, y] = positionKey.split(',').map(Number)
       const position = { x, y }
-      this.drawMoveLabel(position, label.toString())
+      let stoneColor: StoneColor = 'black'
+      if (board) {
+        const color = board.getStone(position)
+        if (color === 'empty') {
+          continue
+        }
+        stoneColor = color
+      }
+      this.drawMoveLabel(position, label.toString(), stoneColor)
     }
   }
 
@@ -193,6 +202,24 @@ export class BoardRenderer {
     }
 
     this.ctx.stroke()
+
+    // Draw an outer border around the grid for a crisp edge (example style)
+    this.ctx.beginPath()
+    this.ctx.moveTo(this.margin, this.margin)
+    this.ctx.lineTo(
+      this.margin + (this.boardSize - 1) * this.cellSize,
+      this.margin
+    )
+    this.ctx.lineTo(
+      this.margin + (this.boardSize - 1) * this.cellSize,
+      this.margin + (this.boardSize - 1) * this.cellSize
+    )
+    this.ctx.lineTo(
+      this.margin,
+      this.margin + (this.boardSize - 1) * this.cellSize
+    )
+    this.ctx.lineTo(this.margin, this.margin) // back to start to complete rectangle
+    this.ctx.stroke()
   }
 
   /**
@@ -200,7 +227,8 @@ export class BoardRenderer {
    */
   private drawStarPoints(): void {
     const starPoints = STAR_POINTS[this.boardSize] || []
-    const radius = Math.max(2, this.cellSize * 0.08)
+    // Smaller, subtler star-points (roughly 5% of a cell or 2px minimum)
+    const radius = Math.max(2, this.cellSize * 0.05)
 
     this.ctx.setFillStyle(this.options.lineColor)
 
@@ -253,15 +281,11 @@ export class BoardRenderer {
   private drawStone(position: Position, color: StoneColor): void {
     const x = this.margin + position.x * this.cellSize
     const y = this.margin + position.y * this.cellSize
-    const radius = this.cellSize * 0.45
+    // Make stones slightly larger so adjacent stones touch and grid lines
+    // are not visible between them.
+    const radius = this.cellSize * 0.49
 
-    // Draw stone shadow for depth
-    this.ctx.setFillStyle('rgba(0, 0, 0, 0.3)')
-    this.ctx.beginPath()
-    this.ctx.arc(x + 1, y + 1, radius, 0, Math.PI * 2)
-    this.ctx.fill()
-
-    // Draw main stone
+    // Draw main stone (flat – no shadow for the minimalist style)
     const stoneColor =
       color === 'black'
         ? this.options.stoneColors.black
@@ -280,7 +304,11 @@ export class BoardRenderer {
   /**
    * Draw a move label on a stone
    */
-  private drawMoveLabel(position: Position, label: string): void {
+  private drawMoveLabel(
+    position: Position,
+    label: string,
+    stoneColor: StoneColor
+  ): void {
     const x = this.margin + position.x * this.cellSize
     const y = this.margin + position.y * this.cellSize
     const fontSize = Math.max(10, this.cellSize * 0.4)
@@ -289,13 +317,8 @@ export class BoardRenderer {
     this.ctx.setTextAlign('center')
     this.ctx.setTextBaseline('middle')
 
-    // Draw text stroke for contrast
-    this.ctx.setStrokeStyle(this.options.textStrokeColor)
-    this.ctx.setLineWidth(3)
-    this.ctx.strokeText(label, x, y)
-
-    // Draw text fill
-    this.ctx.setFillStyle(this.options.textColor)
+    const fillColor = stoneColor === 'black' ? '#ffffff' : '#000000'
+    this.ctx.setFillStyle(fillColor)
     this.ctx.fillText(label, x, y)
   }
 
