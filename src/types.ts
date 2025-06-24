@@ -35,13 +35,43 @@ export interface ConvertOptions {
   sgf: SgfInput
   size: Size
   format: ImageFormat
+  /**
+   * Range of moves to display (1-based, inclusive).
+   * Cannot be used together with move option.
+   * Example: [1, 50] shows moves 1 through 50
+   */
   moveRange?: [number, number]
-  move?: number // Show board state up to specific move index (0-based)
-  lastMoveLabel?: boolean // Whether to label the last move played
+  /**
+   * Show board state up to specific move index (0-based).
+   * Cannot be used together with moveRange option.
+   * Example: 10 shows board after first 11 moves
+   */
+  move?: number
+  /**
+   * Whether to mark the last move played with a special indicator.
+   * Default: false
+   */
+  lastMoveLabel?: boolean
+  /**
+   * Whether to show coordinate labels around the board.
+   * Default: false
+   */
   showCoordinates?: boolean
+  /**
+   * JPEG quality from 0.0 to 1.0 (higher is better quality).
+   * Only applies to JPEG format. Default: 0.9
+   */
   quality?: number
-  labelType?: LabelType // How to render move labels (numeric, circle, square, triangle, letters)
-  labelText?: string // Custom text for labels (overrides automatic numbering/lettering)
+  /**
+   * How to render move labels (numeric, circle, square, triangle, letters).
+   * Default: LabelType.Numeric
+   */
+  labelType?: LabelType
+  /**
+   * Custom text for labels (overrides automatic numbering/lettering).
+   * When provided, all labels will use this text instead of numbers/letters.
+   */
+  labelText?: string
 }
 
 /**

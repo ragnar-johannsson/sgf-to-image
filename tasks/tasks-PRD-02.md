@@ -48,12 +48,12 @@
   - [x] 3.6 Provide `--help` output and descriptive errors
   - [x] 3.7 Add end-to-end tests in `tests/cli/cli.test.ts` using `execa`
 
-- [ ] 4.0 Extend library API, types, and validation
-  - [ ] 4.1 Add new option interfaces to `types.ts` (`range`, `move`, `labelType`, `labelText`, `quality`)
-  - [ ] 4.2 Update `index.ts` to surface the new options in the public API
-  - [ ] 4.3 Implement runtime validation with descriptive error messages
-  - [ ] 4.4 Ensure existing functions remain backward compatible (default behavior unchanged)
-  - [ ] 4.5 Update `README.md` with examples of new API usage
+- [x] 4.0 Extend library API, types, and validation
+  - [x] 4.1 Add new option interfaces to `types.ts` (`range`, `move`, `labelType`, `labelText`, `quality`)
+  - [x] 4.2 Update `index.ts` to surface the new options in the public API
+  - [x] 4.3 Implement runtime validation with descriptive error messages
+  - [x] 4.4 Ensure existing functions remain backward compatible (default behavior unchanged)
+  - [x] 4.5 Update `README.md` with examples of new API usage
 
 - [ ] 5.0 Add tests, performance checks, and documentation updates
   - [ ] 5.1 Achieve 100 % coverage for new code paths

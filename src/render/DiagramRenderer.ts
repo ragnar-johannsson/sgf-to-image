@@ -7,7 +7,7 @@ import {
   formatOverwrittenLabels,
 } from '../board/applyMoves'
 import type { ConvertOptions, Move, Size } from '../types'
-import { RenderError } from '../types'
+import { RenderError, LabelType } from '../types'
 
 /**
  * Size preset mappings for image export
@@ -58,6 +58,8 @@ export class DiagramRenderer {
       const moveRange = options.moveRange
       const moveIndex = options.move
       const lastMoveLabel = options.lastMoveLabel || false
+      const labelType = options.labelType || LabelType.Numeric
+      const labelText = options.labelText
 
       // Validate mutually exclusive options
       if (moveRange && moveIndex !== undefined) {
@@ -94,7 +96,7 @@ export class DiagramRenderer {
       // Render the complete diagram
       renderer.renderBoard()
       renderer.renderStones(moveResult.board)
-      renderer.renderMoveLabels(labels, moveResult.board)
+      renderer.renderMoveLabels(labels, moveResult.board, labelType, labelText)
       renderer.renderOverwrittenLabels(overwrittenLabels)
 
       return canvas

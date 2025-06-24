@@ -7,15 +7,15 @@ Convert SGF (Smart Game Format) files to high-quality PNG/JPEG diagrams for Go/B
 
 ## Features
 
-✨ **Multiple Input Formats**: SGF strings, file paths, or File/Blob objects  
-🎯 **Flexible Board Sizes**: Support for 9×9, 13×13, 19×19, and custom sizes  
-🎨 **High-Quality Rendering**: Anti-aliased graphics with professional appearance  
-📏 **Size Presets**: Small (480×480), Medium (1080×1080), Large (2160×2160)  
-🔢 **Smart Move Labels**: Automatic numbering with overwrite detection  
-🗺️ **Optional Coordinates**: Toggle A-T and 1-19 board coordinates  
-⚡ **Performance Optimized**: < 100ms rendering for 19×19 medium diagrams  
-📦 **Universal Compatibility**: ESM and CommonJS with full TypeScript support  
-🎛️ **Advanced Options**: Move ranges, custom sizes, quality control
+**Multiple Input Formats**: SGF strings, file paths, or File/Blob objects  
+**Flexible Board Sizes**: Support for 9×9, 13×13, 19×19, and custom sizes  
+**High-Quality Rendering**: Anti-aliased graphics with professional appearance  
+**Size Presets**: Small (480×480), Medium (1080×1080), Large (2160×2160)  
+**Smart Move Labels**: Automatic numbering with overwrite detection  
+**Optional Coordinates**: Toggle A-T and 1-19 board coordinates  
+**Performance Optimized**: < 100ms rendering for 19×19 medium diagrams  
+**Universal Compatibility**: ESM and CommonJS with full TypeScript support  
+**Advanced Options**: Move ranges, custom sizes, quality control
 
 ## Installation
 
@@ -65,10 +65,12 @@ const result = await convertSgfToImage({
   format: 'png',
   moveRange: [1, 50], // Show moves 1-50
   showCoordinates: true,
-  quality: 90, // JPEG quality (1-100)
+  lastMoveLabel: true, // Mark last move with triangle
+  labelType: 'letters', // Use A, B, C... instead of 1, 2, 3...
+  quality: 0.9, // JPEG quality (0.0-1.0)
 })
 
-console.log(result.overwrittenLabels) // ['A1', 'B2'] - moves that were overwritten
+console.log(result.overwrittenLabels) // ['4 at 10', '18 at 20'] - moves that were overwritten
 ```
 
 ## API Reference
@@ -93,14 +95,18 @@ const result = await convertSgfToImage({
 
 #### `ConvertOptions`
 
-| Property          | Type                       | Required | Description                                  |
-| ----------------- | -------------------------- | -------- | -------------------------------------------- |
-| `sgf`             | `string \| File \| Blob`   | ✅       | SGF content, file path, or binary data       |
-| `size`            | `SizePreset \| CustomSize` | ✅       | Output dimensions                            |
-| `format`          | `'png' \| 'jpeg'`          | ✅       | Image format                                 |
-| `moveRange`       | `[number, number]`         | ❌       | Range of moves to display (e.g., `[1, 50]`)  |
-| `showCoordinates` | `boolean`                  | ❌       | Show A-T/1-19 coordinates (default: `false`) |
-| `quality`         | `number`                   | ❌       | JPEG quality 1-100 (default: `85`)           |
+| Property          | Type                       | Required | Description                                             |
+| ----------------- | -------------------------- | -------- | ------------------------------------------------------- |
+| `sgf`             | `string \| File \| Blob`   | ✅       | SGF content, file path, or binary data                  |
+| `size`            | `SizePreset \| CustomSize` | ✅       | Output dimensions                                       |
+| `format`          | `'png' \| 'jpeg'`          | ✅       | Image format                                            |
+| `moveRange`       | `[number, number]`         | ❌       | Range of moves to display (e.g., `[1, 50]`)             |
+| `move`            | `number`                   | ❌       | Show board state up to move N (0-based)                 |
+| `lastMoveLabel`   | `boolean`                  | ❌       | Mark last move with triangle (default: `false`)         |
+| `showCoordinates` | `boolean`                  | ❌       | Show A-T/1-19 coordinates (default: `false`)            |
+| `labelType`       | `LabelType`                | ❌       | Label style: numeric, letters, circle, square, triangle |
+| `labelText`       | `string`                   | ❌       | Custom text for all labels (overrides numbering)        |
+| `quality`         | `number`                   | ❌       | JPEG quality 0.0-1.0 (default: `0.9`)                   |
 
 #### Size Options
 
@@ -141,6 +147,52 @@ const result = await convertSgfToImage({
 })
 ```
 
+#### Board State at Specific Move
+
+Show the board position after a specific number of moves:
+
+```typescript
+// Show board after first 25 moves (0-based indexing)
+const result = await convertSgfToImage({
+  sgf: gameContent,
+  size: 'medium',
+  format: 'png',
+  move: 24, // Shows moves 0-24 (first 25 moves)
+  lastMoveLabel: true, // Mark the last move with a triangle
+})
+```
+
+#### Custom Label Styles
+
+Change how move numbers are displayed:
+
+```typescript
+// Use letters instead of numbers (A, B, C...)
+const result = await convertSgfToImage({
+  sgf: gameContent,
+  size: 'medium',
+  format: 'png',
+  labelType: 'letters',
+  moveRange: [1, 26], // A through Z
+})
+
+// Use shapes with numbers inside
+const result = await convertSgfToImage({
+  sgf: gameContent,
+  size: 'medium',
+  format: 'png',
+  labelType: 'circle', // or 'square', 'triangle'
+})
+
+// Use custom text for all labels
+const result = await convertSgfToImage({
+  sgf: gameContent,
+  size: 'medium',
+  format: 'png',
+  labelText: '★', // All moves labeled with star symbol
+})
+```
+
 #### Custom Dimensions
 
 ```typescript
@@ -177,10 +229,20 @@ const result = await convertSgfToImage({
 The library provides specific error types for different failure scenarios:
 
 ```typescript
-import { convertSgfToImage, InvalidSgfError, RenderError } from 'sgf-to-image'
+import {
+  convertSgfToImage,
+  InvalidSgfError,
+  RenderError,
+  LabelType,
+} from 'sgf-to-image'
 
 try {
-  const result = await convertSgfToImage(options)
+  const result = await convertSgfToImage({
+    sgf: gameContent,
+    size: 'medium',
+    format: 'png',
+    labelType: LabelType.Letters,
+  })
 } catch (error) {
   if (error instanceof InvalidSgfError) {
     console.error('SGF parsing failed:', error.message)

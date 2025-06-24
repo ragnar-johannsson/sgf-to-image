@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterEach, afterAll } from 'vitest'
 import { execa } from 'execa'
-import { writeFileSync, existsSync, unlinkSync, readFileSync } from 'fs'
+import { writeFileSync, existsSync, unlinkSync } from 'fs'
 import { resolve } from 'path'
 
 describe('CLI end-to-end tests', () => {

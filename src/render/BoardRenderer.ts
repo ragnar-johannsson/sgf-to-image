@@ -133,7 +133,8 @@ export class BoardRenderer {
   renderMoveLabels(
     labels: Map<string, number>,
     board?: Board,
-    labelType: LabelType = LabelType.Numeric
+    labelType: LabelType = LabelType.Numeric,
+    customText?: string
   ): void {
     for (const [positionKey, label] of labels.entries()) {
       const [x, y] = positionKey.split(',').map(Number)
@@ -146,7 +147,13 @@ export class BoardRenderer {
         }
         stoneColor = color
       }
-      this.drawMoveLabel(position, label.toString(), stoneColor, labelType)
+      this.drawMoveLabel(
+        position,
+        label.toString(),
+        stoneColor,
+        labelType,
+        customText
+      )
     }
   }
 
@@ -340,7 +347,8 @@ export class BoardRenderer {
     position: Position,
     label: string,
     stoneColor: StoneColor,
-    labelType: LabelType = LabelType.Numeric
+    labelType: LabelType = LabelType.Numeric,
+    customText?: string
   ): void {
     // Check if this is a special last move label
     const labelNum = parseInt(label, 10)
@@ -350,8 +358,8 @@ export class BoardRenderer {
       return
     }
 
-    // Convert label text based on label type
-    const displayText = this.convertLabelToText(label, labelType)
+    // Use custom text if provided, otherwise convert label text based on label type
+    const displayText = customText || this.convertLabelToText(label, labelType)
 
     // Handle different label rendering modes
     switch (labelType) {
