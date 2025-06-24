@@ -73,8 +73,8 @@ describe('applyMoves', () => {
 
       const result = applyMoves(board, moves, [2, 4])
 
-      expect(result.appliedMoves).toHaveLength(3) // moves 2, 3, 4
-      expect(result.board.getStone({ x: 3, y: 3 })).toBe('empty') // move 1 not applied
+      expect(result.appliedMoves).toHaveLength(4) // moves 1, 2, 3, 4 (all up to range end)
+      expect(result.board.getStone({ x: 3, y: 3 })).toBe('black') // move 1 applied
       expect(result.board.getStone({ x: 4, y: 4 })).toBe('white') // move 2
       expect(result.board.getStone({ x: 5, y: 5 })).toBe('black') // move 3
       expect(result.board.getStone({ x: 6, y: 6 })).toBe('white') // move 4
@@ -87,10 +87,10 @@ describe('applyMoves', () => {
 
       const result = applyMoves(board, moves, [3, 3])
 
-      expect(result.appliedMoves).toHaveLength(1)
-      expect(result.board.getStone({ x: 5, y: 5 })).toBe('black')
-      expect(result.board.getStone({ x: 3, y: 3 })).toBe('empty')
-      expect(result.board.getStone({ x: 4, y: 4 })).toBe('empty')
+      expect(result.appliedMoves).toHaveLength(3) // moves 1, 2, 3 (all up to range end)
+      expect(result.board.getStone({ x: 5, y: 5 })).toBe('black') // move 3
+      expect(result.board.getStone({ x: 3, y: 3 })).toBe('black') // move 1 applied
+      expect(result.board.getStone({ x: 4, y: 4 })).toBe('white') // move 2 applied
     })
   })
 
@@ -194,14 +194,14 @@ describe('applyMoves', () => {
       expect(labels.get('7,7')).toBe(6)
     })
 
-    it('should generate sequential labels for range', () => {
+    it('should generate actual move numbers for range', () => {
       const moves = createTestMoves().filter((move) => move.position)
       const labels = generateMoveLabels(moves, [2, 4])
 
       expect(labels.size).toBe(3)
-      expect(labels.get('4,4')).toBe(1) // move 2 -> label 1
-      expect(labels.get('5,5')).toBe(2) // move 3 -> label 2
-      expect(labels.get('6,6')).toBe(3) // move 4 -> label 3
+      expect(labels.get('4,4')).toBe(2) // move 2 -> label 2
+      expect(labels.get('5,5')).toBe(3) // move 3 -> label 3
+      expect(labels.get('6,6')).toBe(4) // move 4 -> label 4
     })
 
     it('should handle empty move list', () => {
@@ -235,14 +235,14 @@ describe('applyMoves', () => {
       // Generate labels for the applied moves with the same range
       const labels = generateMoveLabels(moveResult.appliedMoves, moveRange)
 
-      // Should have 3 moves applied (2, 3, 4) but only those in range get labels
-      expect(moveResult.appliedMoves).toHaveLength(3)
+      // Should have 4 moves applied (1, 2, 3, 4) but only range moves (2, 3, 4) get labels
+      expect(moveResult.appliedMoves).toHaveLength(4)
       expect(labels.size).toBe(3)
 
-      // The labels should be sequential 1, 2, 3 for the range moves
-      expect(labels.get('4,4')).toBe(1) // move 2 -> label 1
-      expect(labels.get('5,5')).toBe(2) // move 3 -> label 2
-      expect(labels.get('6,6')).toBe(3) // move 4 -> label 3
+      // The labels should show actual move numbers for the range moves
+      expect(labels.get('4,4')).toBe(2) // move 2 -> label 2
+      expect(labels.get('5,5')).toBe(3) // move 3 -> label 3
+      expect(labels.get('6,6')).toBe(4) // move 4 -> label 4
     })
 
     it('should handle ranges that include pass moves', () => {
@@ -260,13 +260,36 @@ describe('applyMoves', () => {
       const moveResult = applyMoves(board, moves, moveRange)
       const labels = generateMoveLabels(moveResult.appliedMoves, moveRange)
 
-      // Should have moves 2, 3 (pass), 4 applied
-      expect(moveResult.appliedMoves).toHaveLength(3)
+      // Should have moves 1, 2, 3 (pass), 4 applied (all up to range end)
+      expect(moveResult.appliedMoves).toHaveLength(4)
 
-      // Should only label non-pass moves: moves 2 and 4
+      // Should only label non-pass moves: moves 2 and 4 with their actual numbers
       expect(labels.size).toBe(2)
-      expect(labels.get('4,4')).toBe(1) // move 2 -> label 1
-      expect(labels.get('5,5')).toBe(2) // move 4 -> label 2
+      expect(labels.get('4,4')).toBe(2) // move 2 -> label 2
+      expect(labels.get('5,5')).toBe(4) // move 4 -> label 4
+    })
+
+    it('should show actual move numbers for large range', () => {
+      // Create moves with higher numbers to test range labeling
+      const moves: Move[] = [
+        { color: 'black', position: { x: 3, y: 3 }, moveNumber: 15 },
+        { color: 'white', position: { x: 4, y: 4 }, moveNumber: 16 },
+        { color: 'black', position: { x: 5, y: 5 }, moveNumber: 17 },
+        { color: 'white', position: { x: 6, y: 6 }, moveNumber: 18 },
+        { color: 'black', position: { x: 7, y: 7 }, moveNumber: 19 },
+      ]
+
+      // Test range [16, 18] - should show labels 16, 17, 18 not 1, 2, 3
+      const labels = generateMoveLabels(moves, [16, 18])
+
+      expect(labels.size).toBe(3)
+      expect(labels.get('4,4')).toBe(16) // move 16 -> label 16
+      expect(labels.get('5,5')).toBe(17) // move 17 -> label 17
+      expect(labels.get('6,6')).toBe(18) // move 18 -> label 18
+
+      // Moves outside range should not have labels
+      expect(labels.has('3,3')).toBe(false) // move 15
+      expect(labels.has('7,7')).toBe(false) // move 19
     })
   })
 
@@ -343,6 +366,7 @@ describe('Move index and snapshots', () => {
     const moves = createTestMoves()
 
     // Apply range [2, 4] but limit to first 2 moves of that range
+    // This uses the original selectMoves logic: filter by range, then limit by index
     const result = applyMoves(board, moves, [2, 4], 2)
 
     expect(result.appliedMoves).toHaveLength(2)

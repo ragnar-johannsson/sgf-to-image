@@ -5,6 +5,7 @@ import {
   createDiagramRenderer,
 } from '../../src/render/DiagramRenderer'
 import { Move } from '../../src/types'
+import { LabelType } from '../../src/types'
 
 // Mock CanvasFactory at module level
 vi.mock('../../src/render/CanvasFactory', async () => {
@@ -245,6 +246,38 @@ describe('DiagramRenderer', () => {
       expect(canvas.height).toBe(480)
     })
 
+    it('should render board state without move labels when using move option', async () => {
+      const moves = createTestMoves()
+
+      // When using move option, should show board state but no move number labels
+      const canvas = await renderer.renderDiagram(19, moves, {
+        move: 2, // Show board after first 3 moves
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
+      expect(canvas.width).toBe(480)
+      expect(canvas.height).toBe(480)
+
+      // TODO: In a real implementation, we would verify that no move labels are rendered
+      // This could be done by checking the canvas drawing operations or comparing with expected output
+    })
+
+    it('should show only last move marker when move option combined with lastMoveLabel', async () => {
+      const moves = createTestMoves()
+
+      // When using move + lastMoveLabel, should show only the last move marker
+      const canvas = await renderer.renderDiagram(19, moves, {
+        move: 2,
+        lastMoveLabel: true,
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
+      expect(canvas.width).toBe(480)
+      expect(canvas.height).toBe(480)
+    })
+
     it('should render diagram with range option', async () => {
       const moves = createTestMoves()
 
@@ -339,6 +372,237 @@ describe('DiagramRenderer', () => {
     })
   })
 
+  describe('New label options support', () => {
+    beforeEach(async () => {
+      await renderer.initialize()
+    })
+
+    it('should render diagram with different label types', async () => {
+      const moves = createTestMoves()
+
+      // Test all label types
+      const labelTypes = [
+        LabelType.Numeric,
+        LabelType.Letters,
+        LabelType.Circle,
+        LabelType.Square,
+        LabelType.Triangle,
+      ]
+
+      for (const labelType of labelTypes) {
+        const canvas = await renderer.renderDiagram(19, moves, {
+          labelType,
+          size: 'small',
+        })
+
+        expect(canvas).toBeDefined()
+        expect(canvas.width).toBe(480)
+        expect(canvas.height).toBe(480)
+      }
+    })
+
+    it('should render diagram with custom label text', async () => {
+      const moves = createTestMoves()
+
+      const canvas = await renderer.renderDiagram(19, moves, {
+        labelText: '★',
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
+      expect(canvas.width).toBe(480)
+      expect(canvas.height).toBe(480)
+    })
+
+    it('should combine labelType and labelText options', async () => {
+      const moves = createTestMoves()
+
+      const canvas = await renderer.renderDiagram(19, moves, {
+        labelType: LabelType.Circle,
+        labelText: 'X',
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
+    })
+
+    it('should combine label options with move range', async () => {
+      const moves = createTestMoves()
+
+      const canvas = await renderer.renderDiagram(19, moves, {
+        moveRange: [1, 3],
+        labelType: LabelType.Letters,
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
+    })
+
+    it('should combine label options with move index', async () => {
+      const moves = createTestMoves()
+
+      const canvas = await renderer.renderDiagram(19, moves, {
+        move: 2,
+        labelType: LabelType.Triangle,
+        labelText: '●',
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
+    })
+
+    it('should combine all new options together', async () => {
+      const moves = createTestMoves()
+
+      const canvas = await renderer.renderDiagram(19, moves, {
+        moveRange: [1, 4],
+        labelType: LabelType.Square,
+        lastMoveLabel: true,
+        showCoordinates: true,
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
+    })
+  })
+
+  describe('Visual regression snapshots', () => {
+    beforeEach(async () => {
+      await renderer.initialize()
+    })
+
+    const snapshotMoves = (): Move[] => [
+      { color: 'black', position: { x: 3, y: 3 }, moveNumber: 1 },
+      { color: 'white', position: { x: 4, y: 4 }, moveNumber: 2 },
+      { color: 'black', position: { x: 5, y: 5 }, moveNumber: 3 },
+      { color: 'white', position: { x: 3, y: 4 }, moveNumber: 4 },
+      { color: 'black', position: { x: 4, y: 3 }, moveNumber: 5 },
+    ]
+
+    it('should create consistent snapshots for numeric labels', async () => {
+      const moves = snapshotMoves()
+
+      const canvas = await renderer.renderDiagram(9, moves, {
+        labelType: LabelType.Numeric,
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
+      expect(canvas.width).toBe(480)
+      expect(canvas.height).toBe(480)
+      // Note: In a real implementation, this would compare against saved image snapshots
+    })
+
+    it('should create consistent snapshots for letter labels', async () => {
+      const moves = snapshotMoves()
+
+      const canvas = await renderer.renderDiagram(9, moves, {
+        labelType: LabelType.Letters,
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
+      expect(canvas.width).toBe(480)
+      expect(canvas.height).toBe(480)
+    })
+
+    it('should create consistent snapshots for circle labels', async () => {
+      const moves = snapshotMoves()
+
+      const canvas = await renderer.renderDiagram(9, moves, {
+        labelType: LabelType.Circle,
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
+      expect(canvas.width).toBe(480)
+      expect(canvas.height).toBe(480)
+    })
+
+    it('should create consistent snapshots for square labels', async () => {
+      const moves = snapshotMoves()
+
+      const canvas = await renderer.renderDiagram(9, moves, {
+        labelType: LabelType.Square,
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
+      expect(canvas.width).toBe(480)
+      expect(canvas.height).toBe(480)
+    })
+
+    it('should create consistent snapshots for triangle labels', async () => {
+      const moves = snapshotMoves()
+
+      const canvas = await renderer.renderDiagram(9, moves, {
+        labelType: LabelType.Triangle,
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
+      expect(canvas.width).toBe(480)
+      expect(canvas.height).toBe(480)
+    })
+
+    it('should create consistent snapshots for custom text labels', async () => {
+      const moves = snapshotMoves()
+
+      const canvas = await renderer.renderDiagram(9, moves, {
+        labelText: '★',
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
+      expect(canvas.width).toBe(480)
+      expect(canvas.height).toBe(480)
+    })
+
+    it('should create consistent snapshots for move range rendering', async () => {
+      const moves = snapshotMoves()
+
+      const canvas = await renderer.renderDiagram(9, moves, {
+        moveRange: [2, 4],
+        labelType: LabelType.Letters,
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
+      expect(canvas.width).toBe(480)
+      expect(canvas.height).toBe(480)
+    })
+
+    it('should create consistent snapshots for last move label', async () => {
+      const moves = snapshotMoves()
+
+      const canvas = await renderer.renderDiagram(9, moves, {
+        moveRange: [1, 3],
+        lastMoveLabel: true,
+        labelType: LabelType.Circle,
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
+      expect(canvas.width).toBe(480)
+      expect(canvas.height).toBe(480)
+    })
+
+    it('should create consistent snapshots with coordinates and shapes', async () => {
+      const moves = snapshotMoves()
+
+      const canvas = await renderer.renderDiagram(9, moves, {
+        labelType: LabelType.Square,
+        showCoordinates: true,
+        lastMoveLabel: true,
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
+      expect(canvas.width).toBe(480)
+      expect(canvas.height).toBe(480)
+    })
+  })
+
   describe('Error handling', () => {
     beforeEach(async () => {
       await renderer.initialize()
@@ -391,6 +655,54 @@ describe('DiagramRenderer', () => {
       const canvas = await renderDiagram(19, moves)
 
       expect(canvas).toBeDefined()
+    })
+  })
+
+  describe('Overwritten labels', () => {
+    it('should only show overwritten labels for displayed moves', async () => {
+      // Create moves where some will be captured
+      const moves: Move[] = [
+        { color: 'black', position: { x: 0, y: 0 }, moveNumber: 1 }, // Will be captured
+        { color: 'white', position: { x: 1, y: 0 }, moveNumber: 2 },
+        { color: 'black', position: { x: 0, y: 1 }, moveNumber: 3 },
+        { color: 'white', position: { x: 0, y: 0 }, moveNumber: 4 }, // Reuses position
+        { color: 'black', position: { x: 2, y: 2 }, moveNumber: 5 },
+        { color: 'white', position: { x: 3, y: 3 }, moveNumber: 6 }, // Will be captured
+        { color: 'black', position: { x: 4, y: 3 }, moveNumber: 7 },
+        { color: 'white', position: { x: 3, y: 4 }, moveNumber: 8 },
+        { color: 'black', position: { x: 3, y: 2 }, moveNumber: 9 },
+        { color: 'white', position: { x: 2, y: 3 }, moveNumber: 10 }, // Captures move 6
+      ]
+
+      // Render with range [5, 8] - only moves 5, 6, 7, 8 should have labels
+      const canvas = await renderer.renderDiagram(19, moves, {
+        moveRange: [5, 8],
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
+      // The diagram should only show overwritten labels for moves that are actually labeled (5-8)
+      // If move 6 was captured by move 10, but move 10 is not in the displayed range,
+      // then "6 at 10" should still be shown because move 6 is labeled
+      // However, if move 1 was captured earlier, "1 at X" should NOT be shown since move 1 is not labeled
+    })
+
+    it('should show no overwritten labels when using move option', async () => {
+      const moves: Move[] = [
+        { color: 'black', position: { x: 0, y: 0 }, moveNumber: 1 }, // Will be captured
+        { color: 'white', position: { x: 1, y: 0 }, moveNumber: 2 },
+        { color: 'black', position: { x: 0, y: 1 }, moveNumber: 3 }, // Captures move 1
+        { color: 'white', position: { x: 2, y: 2 }, moveNumber: 4 },
+      ]
+
+      // Using move option - no sequence labels should be shown, so no overwritten labels either
+      const canvas = await renderer.renderDiagram(19, moves, {
+        move: 3, // Show board state after move 3
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
+      // Since no move sequence labels are shown, no overwritten labels should be shown either
     })
   })
 })

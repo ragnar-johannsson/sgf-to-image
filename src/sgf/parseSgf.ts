@@ -233,31 +233,9 @@ function parsePosition(sgfPos: string): Position | null {
  * Convert SGF position character to numeric coordinate
  */
 function sgfPosToCoord(char: string): number {
-  // Standard SGF coordinates: a-h, j-t (skipping i) for 19x19 board
-  const standardCoordMap: Record<string, number> = {
-    a: 0,
-    b: 1,
-    c: 2,
-    d: 3,
-    e: 4,
-    f: 5,
-    g: 6,
-    h: 7,
-    j: 8,
-    k: 9,
-    l: 10,
-    m: 11,
-    n: 12,
-    o: 13,
-    p: 14,
-    q: 15,
-    r: 16,
-    s: 17,
-    t: 18,
-  }
-
-  // Alternative SGF coordinates: a-s (including i) for 19x19 board
-  const alternativeCoordMap: Record<string, number> = {
+  // SGF coordinates: a-s (including i) for 19x19 board
+  // This is the standard SGF format where all letters a-s are valid
+  const coordMap: Record<string, number> = {
     a: 0,
     b: 1,
     c: 2,
@@ -279,11 +257,8 @@ function sgfPosToCoord(char: string): number {
     s: 18,
   }
 
-  // Try standard mapping first, then alternative
-  if (char in standardCoordMap) {
-    return standardCoordMap[char]
-  } else if (char in alternativeCoordMap) {
-    return alternativeCoordMap[char]
+  if (char in coordMap) {
+    return coordMap[char]
   } else {
     throw new InvalidSgfError(`Invalid SGF coordinate character: ${char}`)
   }

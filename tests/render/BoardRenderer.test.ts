@@ -170,11 +170,11 @@ describe('BoardRenderer', () => {
       renderer.renderStones(moveResult.board)
       renderer.renderMoveLabels(rangeLabels, moveResult.board)
 
-      // The labels map should only contain labels for moves 2, 3, 4
+      // The labels map should only contain labels for moves 2, 3, 4 with actual move numbers
       expect(rangeLabels.size).toBe(3)
-      expect(rangeLabels.get('3,3')).toBe(1) // move 2 -> label 1
-      expect(rangeLabels.get('4,4')).toBe(2) // move 3 -> label 2
-      expect(rangeLabels.get('5,5')).toBe(3) // move 4 -> label 3
+      expect(rangeLabels.get('3,3')).toBe(2) // move 2 -> label 2
+      expect(rangeLabels.get('4,4')).toBe(3) // move 3 -> label 3
+      expect(rangeLabels.get('5,5')).toBe(4) // move 4 -> label 4
 
       // Moves 1 and 5 should not have labels
       expect(rangeLabels.has('2,2')).toBe(false) // move 1
@@ -330,6 +330,55 @@ describe('BoardRenderer', () => {
         // Should set monospaced font
         expect(mockContext.font).toMatch(/monospace/)
       }
+    })
+
+    it('should render with custom text override', () => {
+      expect(() => {
+        renderer.renderMoveLabels(labels, board, LabelType.Numeric, '★')
+      }).not.toThrow()
+
+      // Should call fillText with custom text instead of numbers
+      expect(mockContext.fillText).toHaveBeenCalledWith(
+        '★',
+        expect.any(Number),
+        expect.any(Number)
+      )
+      expect(mockContext.fillText).toHaveBeenCalledTimes(3) // one for each label
+    })
+
+    it('should use custom text with different label types', () => {
+      const labelTypes = [
+        LabelType.Circle,
+        LabelType.Square,
+        LabelType.Triangle,
+      ]
+
+      for (const labelType of labelTypes) {
+        vi.clearAllMocks()
+
+        renderer.renderMoveLabels(labels, board, labelType, 'X')
+
+        // Should draw shapes and use custom text
+        expect(mockContext.fillText).toHaveBeenCalledWith(
+          'X',
+          expect.any(Number),
+          expect.any(Number)
+        )
+        expect(mockContext.fillText).toHaveBeenCalledTimes(3)
+      }
+    })
+
+    it('should render last move marker when label is -1', () => {
+      const lastMoveLabels = new Map([['2,2', -1]]) // Special last move marker
+
+      expect(() => {
+        renderer.renderMoveLabels(lastMoveLabels, board, LabelType.Numeric)
+      }).not.toThrow()
+
+      // Should draw circle shapes for last move marker
+      expect(mockContext.arc).toHaveBeenCalled()
+      expect(mockContext.fill).toHaveBeenCalled()
+      expect(mockContext.stroke).toHaveBeenCalled()
     })
 
     it('should handle letters beyond A-Z gracefully', () => {

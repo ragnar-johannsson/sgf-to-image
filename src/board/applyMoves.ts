@@ -40,10 +40,23 @@ export function applyMoves(
   const overwrittenLabels: OverwrittenLabel[] = []
   const movePositionMap = new Map<string, number>() // position -> move number
 
-  // Determine which moves to apply based on both range and index
-  const selectedMoves = selectMoves(moves, moveRange, moveIndex)
+  // Determine which moves to apply for the board state
+  let movesToApply: Move[]
 
-  for (const move of selectedMoves) {
+  if (moveRange && moveIndex === undefined) {
+    // Range-only case: Apply all moves up to the end of the range
+    // to show the correct board position
+    const [, endMove] = moveRange
+    movesToApply = moves.filter((move) => move.moveNumber <= endMove)
+  } else {
+    // Use the original selectMoves logic for:
+    // - index-only cases
+    // - range + index combinations
+    // - no filtering cases
+    movesToApply = selectMoves(moves, moveRange, moveIndex)
+  }
+
+  for (const move of movesToApply) {
     // Skip pass moves
     if (!move.position) {
       appliedMoves.push(move)
@@ -190,9 +203,8 @@ export function generateMoveLabels(
     return labels
   }
 
-  // For ranged moves, use sequential labels starting from 1
+  // For ranged moves, use the actual move numbers (not sequential from 1)
   const [startMove, endMove] = moveRange
-  let labelNumber = 1
 
   for (const move of appliedMoves) {
     if (
@@ -201,7 +213,7 @@ export function generateMoveLabels(
       move.moveNumber <= endMove
     ) {
       const posKey = `${move.position.x},${move.position.y}`
-      labels.set(posKey, labelNumber++)
+      labels.set(posKey, move.moveNumber) // Use actual move number
     }
   }
 

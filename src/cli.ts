@@ -232,7 +232,8 @@ export async function main(): Promise<void> {
     }
 
     if (options.quality && format === 'jpeg') {
-      convertOptions.quality = options.quality
+      // Convert CLI quality (1-100) to library quality (0.0-1.0)
+      convertOptions.quality = options.quality / 100
     } else if (options.quality && format === 'png') {
       console.warn('Warning: --quality option is ignored for PNG format')
     }

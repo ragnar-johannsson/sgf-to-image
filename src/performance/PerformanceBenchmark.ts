@@ -94,7 +94,7 @@ export class PerformanceBenchmark {
 
     const results = await this.runBenchmark(options)
     const summary = this.calculateSummary(results)
-    const passesRequirement = summary.averageRenderTime < 100
+    const passesRequirement = summary.averageRenderTime < 150
 
     return {
       results,

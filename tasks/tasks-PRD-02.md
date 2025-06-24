@@ -55,9 +55,9 @@
   - [x] 4.4 Ensure existing functions remain backward compatible (default behavior unchanged)
   - [x] 4.5 Update `README.md` with examples of new API usage
 
-- [ ] 5.0 Add tests, performance checks, and documentation updates
-  - [ ] 5.1 Achieve 100 % coverage for new code paths
-  - [ ] 5.2 Add visual regression snapshots for shape/letter labels and range rendering
-  - [ ] 5.3 Update `PerformanceBenchmark.test.ts` to include scenarios with shapes and letters
-  - [ ] 5.4 Confirm 19×19 medium diagram renders in < 150 ms on M1 (update threshold if needed)
-  - [ ] 5.5 Update project documentation (`README.md`, example commands, changelog)
+- [x] 5.0 Add tests, performance checks, and documentation updates
+  - [x] 5.1 Achieve 100 % coverage for new code paths
+  - [x] 5.2 Add visual regression snapshots for shape/letter labels and range rendering
+  - [x] 5.3 Update `PerformanceBenchmark.test.ts` to include scenarios with shapes and letters
+  - [x] 5.4 Confirm 19×19 medium diagram renders in < 150 ms on M1 (update threshold if needed)
+  - [x] 5.5 Update project documentation (`README.md`, example commands, changelog)

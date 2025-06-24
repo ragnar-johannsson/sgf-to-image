@@ -5,7 +5,11 @@ import type { ConvertOptions, ImageResult } from './types'
 // Import internal functions for main API
 import { parseSgf } from './sgf/parseSgf'
 import { Board } from './board/Board'
-import { applyMoves, formatOverwrittenLabels } from './board/applyMoves'
+import {
+  applyMoves,
+  generateMoveLabels,
+  formatOverwrittenLabels,
+} from './board/applyMoves'
 import { DiagramRenderer } from './render/DiagramRenderer'
 import { ImageExporter } from './render/ImageExporter'
 import { InvalidSgfError, RenderError, LabelType } from './types'
@@ -271,9 +275,34 @@ export async function convertSgfToImage(
       options.moveRange,
       options.move
     )
-    const formattedLabels = formatOverwrittenLabels(
-      moveResult.overwrittenLabels
+
+    // Generate labels using the same logic as DiagramRenderer to determine what's displayed
+    let displayedLabels: Map<string, number>
+    if (options.move !== undefined) {
+      // When using move option, no sequence labels are displayed
+      displayedLabels = new Map<string, number>()
+    } else {
+      // For range option or no filtering, generate normal labels
+      displayedLabels = generateMoveLabels(
+        moveResult.appliedMoves,
+        options.moveRange
+      )
+    }
+
+    // Filter overwritten labels to only include those where the original move is actually displayed
+    const displayedMoveNumbers = new Set<number>()
+    for (const labelValue of displayedLabels.values()) {
+      if (labelValue > 0) {
+        // Exclude special markers like -1 for last move
+        displayedMoveNumbers.add(labelValue)
+      }
+    }
+
+    const filteredOverwrittenLabels = moveResult.overwrittenLabels.filter(
+      (label) => displayedMoveNumbers.has(label.originalMove)
     )
+
+    const formattedLabels = formatOverwrittenLabels(filteredOverwrittenLabels)
 
     return {
       imageBuffer: exportResult.buffer,

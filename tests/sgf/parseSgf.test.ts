@@ -22,12 +22,12 @@ describe('parseSgf', () => {
       expect(result.moves).toHaveLength(4)
       expect(result.moves[0]).toEqual({
         color: 'black',
-        position: { x: 14, y: 3 }, // pd = p(14), d(3)
+        position: { x: 15, y: 3 }, // pd = p(15), d(3)
         moveNumber: 1,
       })
       expect(result.moves[1]).toEqual({
         color: 'white',
-        position: { x: 3, y: 14 }, // dp = d(3), p(14)
+        position: { x: 3, y: 15 }, // dp = d(3), p(15)
         moveNumber: 2,
       })
     })
@@ -66,7 +66,7 @@ describe('parseSgf', () => {
       expect(result.moves.length).toBeGreaterThan(15) // Should have many moves
       expect(result.moves[0]).toEqual({
         color: 'black',
-        position: { x: 14, y: 3 }, // pd
+        position: { x: 15, y: 3 }, // pd
         moveNumber: 1,
       })
     })
@@ -151,8 +151,8 @@ describe('parseSgf', () => {
       const result = await parseSgf(sgfContent)
 
       expect(result.moves[0].position).toEqual({ x: 0, y: 0 }) // aa = top-left
-      expect(result.moves[1].position).toEqual({ x: 17, y: 17 }) // ss = s(17), s(17)
-      expect(result.moves[2].position).toEqual({ x: 8, y: 8 }) // jj = j(8), j(8)
+      expect(result.moves[1].position).toEqual({ x: 18, y: 18 }) // ss = s(18), s(18)
+      expect(result.moves[2].position).toEqual({ x: 9, y: 9 }) // jj = j(9), j(9)
     })
 
     it('should handle coordinates that skip "i"', async () => {
@@ -161,13 +161,26 @@ describe('parseSgf', () => {
       const result = await parseSgf(sgfContent)
 
       expect(result.moves[0].position).toEqual({ x: 7, y: 7 }) // h = 7
-      expect(result.moves[1].position).toEqual({ x: 8, y: 8 }) // j = 8 (skips i)
+      expect(result.moves[1].position).toEqual({ x: 9, y: 9 }) // j = 9 (includes i)
     })
 
     it('should throw error for invalid coordinates', async () => {
       const sgfContent = '(;FF[4]GM[1]SZ[19];B[zz])'
 
       await expect(parseSgf(sgfContent)).rejects.toThrow(InvalidSgfError)
+    })
+
+    it('should accept "i" as a valid coordinate', async () => {
+      // The letter 'i' should be a valid coordinate in SGF format
+      const sgfContent = '(;FF[4]GM[1]SZ[19];B[ii])'
+      const result = await parseSgf(sgfContent)
+
+      expect(result.moves).toHaveLength(1)
+      expect(result.moves[0]).toEqual({
+        color: 'black',
+        position: { x: 8, y: 8 }, // i = 8
+        moveNumber: 1,
+      })
     })
   })
 
@@ -179,11 +192,11 @@ describe('parseSgf', () => {
       expect(result.markup).toHaveLength(2)
       expect(result.markup[0]).toEqual({
         type: 'circle',
-        position: { x: 14, y: 3 }, // pd
+        position: { x: 15, y: 3 }, // pd
       })
       expect(result.markup[1]).toEqual({
         type: 'circle',
-        position: { x: 15, y: 15 }, // qq
+        position: { x: 16, y: 16 }, // qq
       })
     })
 
@@ -198,7 +211,7 @@ describe('parseSgf', () => {
       })
       expect(result.markup[1]).toEqual({
         type: 'square',
-        position: { x: 3, y: 14 }, // dp
+        position: { x: 3, y: 15 }, // dp
       })
     })
 
@@ -209,11 +222,11 @@ describe('parseSgf', () => {
       expect(result.markup).toHaveLength(2)
       expect(result.markup[0]).toEqual({
         type: 'triangle',
-        position: { x: 14, y: 3 }, // pd
+        position: { x: 15, y: 3 }, // pd
       })
       expect(result.markup[1]).toEqual({
         type: 'triangle',
-        position: { x: 14, y: 14 }, // pp
+        position: { x: 15, y: 15 }, // pp
       })
     })
 
@@ -224,12 +237,12 @@ describe('parseSgf', () => {
       expect(result.markup).toHaveLength(3)
       expect(result.markup[0]).toEqual({
         type: 'label',
-        position: { x: 14, y: 3 }, // pd
+        position: { x: 15, y: 3 }, // pd
         text: 'A',
       })
       expect(result.markup[1]).toEqual({
         type: 'label',
-        position: { x: 15, y: 15 }, // qq
+        position: { x: 16, y: 16 }, // qq
         text: 'B',
       })
       expect(result.markup[2]).toEqual({
@@ -269,7 +282,7 @@ describe('parseSgf', () => {
       expect(result.markup).toHaveLength(1)
       expect(result.markup[0]).toEqual({
         type: 'label',
-        position: { x: 14, y: 3 }, // pd
+        position: { x: 15, y: 3 }, // pd
         text: 'A:B:C',
       })
     })

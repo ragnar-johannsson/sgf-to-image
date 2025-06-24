@@ -5,6 +5,9 @@ Convert SGF (Smart Game Format) files to high-quality PNG/JPEG diagrams for Go/B
 [![npm version](https://badge.fury.io/js/sgf-to-image.svg)](https://www.npmjs.com/package/sgf-to-image)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 
+![Diagram](https://github.com/ragnar-johannsson/sgf-to-image/blob/master/image.jpg?raw=true)
+
+
 ## Features
 
 **Multiple Input Formats**: SGF strings, file paths, or File/Blob objects  
@@ -286,6 +289,61 @@ npm run lint
 npm run format
 ```
 
+## Changelog
+
+### Version 0.2.0 (Latest)
+
+#### Major New Features
+
+- **Advanced Label Types**: Support for circles, squares, triangles, and letters instead of just numbers
+- **Custom Label Text**: Override automatic numbering with custom text for all labels
+- **Move Range Selection**: Display only specific moves from a game using `moveRange` option
+- **Board Snapshots**: Show board state at a specific move using `move` option
+- **Last Move Highlighting**: Mark the final move with a special triangle indicator
+- **CLI Tool**: Full command-line interface with `npx sgf-to-image`
+- **JPEG Quality Control**: Adjustable compression quality for JPEG output
+
+#### Label Rendering Options
+
+- `LabelType.Numeric` - Traditional 1, 2, 3... numbering (default)
+- `LabelType.Letters` - A, B, C... lettering system
+- `LabelType.Circle` - Numbers/text inside circles
+- `LabelType.Square` - Numbers/text inside squares
+- `LabelType.Triangle` - Numbers/text inside triangles
+- `labelText` - Custom text override for all labels
+
+#### Enhanced API
+
+- Comprehensive input validation with descriptive error messages
+- Better TypeScript support with complete type exports
+- Improved performance (19×19 renders in <150ms)
+- Full backward compatibility maintained
+
+#### CLI Features
+
+- Cross-platform executable: `npx sgf-to-image input.sgf output.png`
+- Format auto-detection from file extensions
+- All library options available as command-line flags
+- Comprehensive help and error messages
+
+#### Performance & Quality
+
+- Updated performance benchmark to 150ms for 19×19 medium boards
+- Extensive test coverage for all new features
+- Visual regression test framework
+- Memory usage optimizations
+
+### Version 0.1.0
+
+- Initial release with basic SGF to image conversion
+- PNG format support
+- Fixed size presets (small, medium, large)
+- Basic move numbering
+- Core board rendering functionality
+
+---
+
 ## License
 
-MIT
+MIT. See `LICENSE` for details
+

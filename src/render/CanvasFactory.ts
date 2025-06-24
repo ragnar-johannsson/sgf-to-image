@@ -26,9 +26,9 @@ export class CanvasFactory {
       try {
         // Dynamic import to avoid bundling issues
         CanvasFactory.nodeCanvas = await import('canvas')
-      } catch {
+      } catch (error) {
         throw new Error(
-          'node-canvas is required for server-side rendering. Install with: npm install canvas'
+          `node-canvas is required for server-side rendering. Install with: npm install canvas. Error: ${(error as Error).message}`
         )
       }
     }

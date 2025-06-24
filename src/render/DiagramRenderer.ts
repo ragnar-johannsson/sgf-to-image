@@ -73,15 +73,36 @@ export class DiagramRenderer {
       const moveResult = applyMoves(initialBoard, moves, moveRange, moveIndex)
 
       // Generate labels for the selected moves
-      let labels = generateMoveLabels(moveResult.appliedMoves, moveRange)
+      let labels: Map<string, number>
+
+      if (moveIndex !== undefined) {
+        // When using move option, render no sequence labels by default
+        labels = new Map<string, number>()
+      } else {
+        // For range option or no filtering, generate normal labels
+        labels = generateMoveLabels(moveResult.appliedMoves, moveRange)
+      }
 
       // Add last move label if requested and there are applied moves
       if (lastMoveLabel && moveResult.appliedMoves.length > 0) {
         labels = this.addLastMoveLabel(labels, moveResult.appliedMoves)
       }
 
+      // Filter overwritten labels to only include those where the original move is actually displayed
+      const displayedMoveNumbers = new Set<number>()
+      for (const labelValue of labels.values()) {
+        if (labelValue > 0) {
+          // Exclude special markers like -1 for last move
+          displayedMoveNumbers.add(labelValue)
+        }
+      }
+
+      const filteredOverwrittenLabels = moveResult.overwrittenLabels.filter(
+        (label) => displayedMoveNumbers.has(label.originalMove)
+      )
+
       const overwrittenLabels = formatOverwrittenLabels(
-        moveResult.overwrittenLabels
+        filteredOverwrittenLabels
       )
 
       // Create canvas and renderer
@@ -160,7 +181,7 @@ export class DiagramRenderer {
     const newLabels = new Map(labels)
     const posKey = `${lastMove.position.x},${lastMove.position.y}`
 
-    // Use a triangle or other special marker for the last move
+    // Use a circle marker for the last move
     // For now, we'll use a negative number to indicate it's special
     // The BoardRenderer would need to be updated to handle this differently
     newLabels.set(posKey, -1) // Special marker for last move
