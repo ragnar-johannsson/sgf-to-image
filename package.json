@@ -56,9 +56,9 @@
     "prettier": "^3.0.0",
     "typescript": "^5.0.2",
     "typescript-eslint": "^8.34.1",
-    "vite": "^4.4.5",
-    "vite-plugin-dts": "^3.5.2",
-    "vitest": "^0.34.0"
+    "vite": "^6.3.5",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^3.2.4"
   },
   "dependencies": {
     "@sabaki/sgf": "^3.4.7",
