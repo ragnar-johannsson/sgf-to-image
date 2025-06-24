@@ -7,7 +7,7 @@ import prettier from 'eslint-config-prettier'
 export default tseslint.config(
   // Ignore build directories and node_modules
   {
-    ignores: ['dist', 'node_modules', '**/*.d.ts'],
+    ignores: ['dist', 'node_modules', 'bin', '**/*.d.ts'],
   },
 
   // Base ESLint recommended rules

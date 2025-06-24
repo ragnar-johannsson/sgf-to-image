@@ -39,14 +39,14 @@
   - [x] 2.4 Ensure letter glyphs use monospaced font and are centered on stones
   - [x] 2.5 Create unit tests for each label type in `tests/render/BoardRenderer.test.ts`
 
-- [ ] 3.0 Build CLI executable (`npx sgf-to-image`)
-  - [ ] 3.1 Create `bin/sgf-to-image.js` with shebang and delegate logic to `src/cli.ts`
-  - [ ] 3.2 Implement argument parsing in `src/cli.ts` (commander or yargs)
-  - [ ] 3.3 Map CLI flags (`--range`, `--move`, `--last-move-label`, etc.) to library API options
-  - [ ] 3.4 Derive output format from file extension when `--format` not provided
-  - [ ] 3.5 Validate mutually exclusive flags (`--range` vs `--move`)
-  - [ ] 3.6 Provide `--help` output and descriptive errors
-  - [ ] 3.7 Add end-to-end tests in `tests/cli/cli.test.ts` using `execa`
+- [x] 3.0 Build CLI executable (`npx sgf-to-image`)
+  - [x] 3.1 Create `bin/sgf-to-image.js` with shebang and delegate logic to `src/cli.ts`
+  - [x] 3.2 Implement argument parsing in `src/cli.ts` (commander or yargs)
+  - [x] 3.3 Map CLI flags (`--range`, `--move`, `--last-move-label`, etc.) to library API options
+  - [x] 3.4 Derive output format from file extension when `--format` not provided
+  - [x] 3.5 Validate mutually exclusive flags (`--range` vs `--move`)
+  - [x] 3.6 Provide `--help` output and descriptive errors
+  - [x] 3.7 Add end-to-end tests in `tests/cli/cli.test.ts` using `execa`
 
 - [ ] 4.0 Extend library API, types, and validation
   - [ ] 4.1 Add new option interfaces to `types.ts` (`range`, `move`, `labelType`, `labelText`, `quality`)

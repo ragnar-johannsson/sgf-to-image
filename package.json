@@ -6,6 +6,9 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "sgf-to-image": "./bin/sgf-to-image.cjs"
+  },
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -49,6 +52,7 @@
     "bundlesize": "^0.18.0",
     "eslint": "^9.29.0",
     "eslint-config-prettier": "^8.10.0",
+    "execa": "^8.0.0",
     "prettier": "^3.0.0",
     "typescript": "^5.0.2",
     "typescript-eslint": "^8.34.1",
@@ -58,7 +62,8 @@
   },
   "dependencies": {
     "@sabaki/sgf": "^3.4.7",
-    "canvas": "^2.11.2"
+    "canvas": "^2.11.2",
+    "commander": "^11.0.0"
   },
   "bundlesize": [
     {

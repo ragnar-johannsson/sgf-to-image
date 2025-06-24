@@ -10,18 +10,27 @@ export default defineConfig({
   ],
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
-      name: 'SgfToImage',
+      entry: {
+        index: resolve(__dirname, 'src/index.ts'),
+        cli: resolve(__dirname, 'src/cli.ts'),
+      },
       formats: ['es', 'cjs'],
-      fileName: (format) => `index.${format === 'es' ? 'js' : 'cjs'}`,
+      fileName: (format, entryName) => {
+        if (entryName === 'cli') {
+          return `cli.${format === 'es' ? 'js' : 'cjs'}`
+        }
+        return `index.${format === 'es' ? 'js' : 'cjs'}`
+      },
     },
     rollupOptions: {
-      external: ['canvas', '@sabaki/sgf', 'fs'],
+      external: ['canvas', '@sabaki/sgf', 'fs', 'path', 'commander'],
       output: {
         globals: {
           canvas: 'canvas',
           '@sabaki/sgf': 'SGF',
           fs: 'fs',
+          path: 'path',
+          commander: 'commander',
         },
       },
     },
