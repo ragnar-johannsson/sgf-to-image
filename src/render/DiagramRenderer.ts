@@ -56,13 +56,28 @@ export class DiagramRenderer {
       const renderSize = this.parseSize(options.size || 'small')
       const showCoordinates = options.showCoordinates || false
       const moveRange = options.moveRange
+      const moveIndex = options.move
+      const lastMoveLabel = options.lastMoveLabel || false
+
+      // Validate mutually exclusive options
+      if (moveRange && moveIndex !== undefined) {
+        throw new RenderError(
+          'Cannot specify both moveRange and move options. Use one or the other.'
+        )
+      }
 
       // Create board and apply moves
       const initialBoard = Board.empty(boardSize)
-      const moveResult = applyMoves(initialBoard, moves, moveRange)
+      const moveResult = applyMoves(initialBoard, moves, moveRange, moveIndex)
 
       // Generate labels for the selected moves
-      const labels = generateMoveLabels(moveResult.appliedMoves, moveRange)
+      let labels = generateMoveLabels(moveResult.appliedMoves, moveRange)
+
+      // Add last move label if requested and there are applied moves
+      if (lastMoveLabel && moveResult.appliedMoves.length > 0) {
+        labels = this.addLastMoveLabel(labels, moveResult.appliedMoves)
+      }
+
       const overwrittenLabels = formatOverwrittenLabels(
         moveResult.overwrittenLabels
       )
@@ -116,6 +131,39 @@ export class DiagramRenderer {
       }
       return size.width
     }
+  }
+
+  /**
+   * Add a special label for the last move played
+   */
+  private addLastMoveLabel(
+    labels: Map<string, number>,
+    appliedMoves: Move[]
+  ): Map<string, number> {
+    if (appliedMoves.length === 0) {
+      return labels
+    }
+
+    // Find the last move with a position (skip pass moves)
+    const lastMove = appliedMoves
+      .slice()
+      .reverse()
+      .find((move) => move.position !== null)
+
+    if (!lastMove || !lastMove.position) {
+      return labels
+    }
+
+    // Create a new map with the last move labeled specially
+    const newLabels = new Map(labels)
+    const posKey = `${lastMove.position.x},${lastMove.position.y}`
+
+    // Use a triangle or other special marker for the last move
+    // For now, we'll use a negative number to indicate it's special
+    // The BoardRenderer would need to be updated to handle this differently
+    newLabels.set(posKey, -1) // Special marker for last move
+
+    return newLabels
   }
 
   /**

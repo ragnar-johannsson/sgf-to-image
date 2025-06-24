@@ -4,14 +4,19 @@ import {
   DEFAULT_RENDER_OPTIONS,
 } from '../../src/render/BoardRenderer'
 import { Board } from '../../src/board/Board'
+import { CanvasFactory } from '../../src/render/CanvasFactory'
+import { applyMoves, generateMoveLabels } from '../../src/board/applyMoves'
+import type { Move } from '../../src/types'
 
 describe('BoardRenderer', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockCanvas: any
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockContext: any
+  let renderer: BoardRenderer
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    await CanvasFactory.initialize()
     mockContext = {
       fillStyle: '',
       strokeStyle: '',
@@ -40,6 +45,8 @@ describe('BoardRenderer', () => {
       getContext: vi.fn(() => mockContext),
       toDataURL: vi.fn(() => 'data:image/png;base64,test'),
     }
+
+    renderer = new BoardRenderer(mockCanvas, 19)
   })
 
   describe('Construction', () => {
@@ -76,8 +83,6 @@ describe('BoardRenderer', () => {
   })
 
   describe('Rendering methods', () => {
-    let renderer: BoardRenderer
-
     beforeEach(() => {
       renderer = new BoardRenderer(mockCanvas, 19)
     })
@@ -139,6 +144,72 @@ describe('BoardRenderer', () => {
       const renderer = new BoardRenderer(mockCanvas, 19)
 
       expect(renderer.getCanvas()).toBe(mockCanvas)
+    })
+  })
+
+  describe('Range label rendering', () => {
+    it('should render labels only for moves in the specified range', () => {
+      const board = new Board(9)
+      const moves: Move[] = [
+        { color: 'black', position: { x: 2, y: 2 }, moveNumber: 1 },
+        { color: 'white', position: { x: 3, y: 3 }, moveNumber: 2 },
+        { color: 'black', position: { x: 4, y: 4 }, moveNumber: 3 },
+        { color: 'white', position: { x: 5, y: 5 }, moveNumber: 4 },
+        { color: 'black', position: { x: 6, y: 6 }, moveNumber: 5 },
+      ]
+
+      // Apply all moves to get the board state
+      const moveResult = applyMoves(board, moves)
+
+      // Generate labels only for moves 2-4 (range)
+      const rangeLabels = generateMoveLabels(moveResult.appliedMoves, [2, 4])
+
+      // Render the board with stones and range labels
+      renderer.renderBoard()
+      renderer.renderStones(moveResult.board)
+      renderer.renderMoveLabels(rangeLabels, moveResult.board)
+
+      // The labels map should only contain labels for moves 2, 3, 4
+      expect(rangeLabels.size).toBe(3)
+      expect(rangeLabels.get('3,3')).toBe(1) // move 2 -> label 1
+      expect(rangeLabels.get('4,4')).toBe(2) // move 3 -> label 2
+      expect(rangeLabels.get('5,5')).toBe(3) // move 4 -> label 3
+
+      // Moves 1 and 5 should not have labels
+      expect(rangeLabels.has('2,2')).toBe(false) // move 1
+      expect(rangeLabels.has('6,6')).toBe(false) // move 5
+
+      // Verify the canvas is properly rendered (basic check)
+      expect(mockCanvas.width).toBe(480) // Default size
+      expect(mockCanvas.height).toBe(480)
+    })
+
+    it('should handle empty label map correctly', () => {
+      const board = new Board(9)
+      const emptyLabels = new Map<string, number>()
+
+      // Should not throw when rendering empty labels
+      expect(() => {
+        renderer.renderBoard()
+        renderer.renderStones(board)
+        renderer.renderMoveLabels(emptyLabels, board)
+      }).not.toThrow()
+    })
+
+    it('should skip labels for empty positions', () => {
+      const board = new Board(9)
+      // Create labels for positions that don't have stones
+      const labelsWithEmptyPositions = new Map<string, number>([
+        ['2,2', 1], // empty position
+        ['3,3', 2], // empty position
+      ])
+
+      // Should not throw and should skip rendering labels for empty positions
+      expect(() => {
+        renderer.renderBoard()
+        renderer.renderStones(board) // empty board
+        renderer.renderMoveLabels(labelsWithEmptyPositions, board)
+      }).not.toThrow()
     })
   })
 })

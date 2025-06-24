@@ -36,6 +36,8 @@ export interface ConvertOptions {
   size: Size
   format: ImageFormat
   moveRange?: [number, number]
+  move?: number // Show board state up to specific move index (0-based)
+  lastMoveLabel?: boolean // Whether to label the last move played
   showCoordinates?: boolean
   quality?: number
 }

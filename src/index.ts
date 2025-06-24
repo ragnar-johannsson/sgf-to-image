@@ -43,6 +43,8 @@ export { parseSgf } from './sgf/parseSgf'
 export { Board } from './board/Board'
 export {
   applyMoves,
+  applyMovesWithSnapshots,
+  selectMoves,
   selectMoveRange,
   generateMoveLabels,
   formatOverwrittenLabels,
@@ -101,6 +103,13 @@ export async function convertSgfToImage(
   options: ConvertOptions
 ): Promise<ImageResult> {
   try {
+    // Validate mutually exclusive options
+    if (options.moveRange && options.move !== undefined) {
+      throw new RenderError(
+        'Cannot specify both moveRange and move options. Use one or the other.'
+      )
+    }
+
     // Parse SGF input
     const parsedGame = await parseSgf(options.sgf)
 
@@ -115,6 +124,12 @@ export async function convertSgfToImage(
     }
     if (options.moveRange) {
       renderOptions.moveRange = options.moveRange
+    }
+    if (options.move !== undefined) {
+      renderOptions.move = options.move
+    }
+    if (options.lastMoveLabel !== undefined) {
+      renderOptions.lastMoveLabel = options.lastMoveLabel
     }
 
     const canvas = await renderer.renderDiagram(
@@ -143,7 +158,8 @@ export async function convertSgfToImage(
     const moveResult = applyMoves(
       initialBoard,
       parsedGame.moves,
-      options.moveRange
+      options.moveRange,
+      options.move
     )
     const formattedLabels = formatOverwrittenLabels(
       moveResult.overwrittenLabels

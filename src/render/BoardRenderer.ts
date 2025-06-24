@@ -311,6 +311,15 @@ export class BoardRenderer {
   ): void {
     const x = this.margin + position.x * this.cellSize
     const y = this.margin + position.y * this.cellSize
+
+    // Check if this is a special last move label
+    const labelNum = parseInt(label, 10)
+    if (labelNum === -1) {
+      // Draw a triangle for the last move
+      this.drawLastMoveMarker(position, stoneColor)
+      return
+    }
+
     const fontSize = Math.max(10, this.cellSize * 0.4)
 
     this.ctx.setFont(`bold ${fontSize}px monospace`)
@@ -320,6 +329,30 @@ export class BoardRenderer {
     const fillColor = stoneColor === 'black' ? '#ffffff' : '#000000'
     this.ctx.setFillStyle(fillColor)
     this.ctx.fillText(label, x, y)
+  }
+
+  /**
+   * Draw a special marker for the last move (triangle)
+   */
+  private drawLastMoveMarker(position: Position, stoneColor: StoneColor): void {
+    const x = this.margin + position.x * this.cellSize
+    const y = this.margin + position.y * this.cellSize
+    const size = this.cellSize * 0.25
+
+    this.ctx.beginPath()
+    this.ctx.moveTo(x, y - size) // top point
+    this.ctx.lineTo(x - size, y + size) // bottom left
+    this.ctx.lineTo(x + size, y + size) // bottom right
+    this.ctx.lineTo(x, y - size) // back to top to close triangle
+
+    const fillColor = stoneColor === 'black' ? '#ffffff' : '#000000'
+    this.ctx.setFillStyle(fillColor)
+    this.ctx.fill()
+
+    // Add a stroke for better visibility
+    this.ctx.setStrokeStyle(stoneColor === 'black' ? '#000000' : '#ffffff')
+    this.ctx.setLineWidth(1)
+    this.ctx.stroke()
   }
 
   /**

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import {
   DiagramRenderer,
   renderDiagram,
+  createDiagramRenderer,
 } from '../../src/render/DiagramRenderer'
 import { Move } from '../../src/types'
 
@@ -65,17 +66,28 @@ vi.mock('../../src/render/CanvasFactory', async () => {
 describe('DiagramRenderer', () => {
   let renderer: DiagramRenderer
 
-  beforeEach(() => {
-    renderer = new DiagramRenderer()
+  beforeEach(async () => {
+    renderer = createDiagramRenderer()
+    await renderer.initialize()
   })
+
+  const createTestMoves = (): Move[] => [
+    { color: 'black', position: { x: 3, y: 3 }, moveNumber: 1 },
+    { color: 'white', position: { x: 4, y: 4 }, moveNumber: 2 },
+    { color: 'black', position: { x: 5, y: 5 }, moveNumber: 3 },
+    { color: 'white', position: { x: 6, y: 6 }, moveNumber: 4 },
+    { color: 'black', position: { x: 7, y: 7 }, moveNumber: 5 },
+  ]
 
   describe('Initialization', () => {
     it('should initialize successfully', async () => {
-      expect(renderer.isInitialized()).toBe(false)
+      // Create a fresh renderer for this test
+      const freshRenderer = createDiagramRenderer()
+      expect(freshRenderer.isInitialized()).toBe(false)
 
-      await renderer.initialize()
+      await freshRenderer.initialize()
 
-      expect(renderer.isInitialized()).toBe(true)
+      expect(freshRenderer.isInitialized()).toBe(true)
     })
 
     it('should handle multiple initialization calls', async () => {
@@ -86,13 +98,15 @@ describe('DiagramRenderer', () => {
     })
 
     it('should throw error when rendering without initialization', async () => {
+      // Create a fresh renderer for this test (not initialized)
+      const uninitializedRenderer = createDiagramRenderer()
       const moves: Move[] = [
         { color: 'black', position: { x: 3, y: 3 }, moveNumber: 1 },
       ]
 
-      await expect(renderer.renderDiagram(19, moves)).rejects.toThrow(
-        'DiagramRenderer not initialized'
-      )
+      await expect(
+        uninitializedRenderer.renderDiagram(19, moves)
+      ).rejects.toThrow('DiagramRenderer not initialized')
     })
   })
 
@@ -209,6 +223,119 @@ describe('DiagramRenderer', () => {
 
       expect(canvasWithCoords).toBeDefined()
       expect(canvasWithoutCoords).toBeDefined()
+    })
+  })
+
+  describe('New options support (move, range, lastMoveLabel)', () => {
+    beforeEach(async () => {
+      await renderer.initialize()
+    })
+
+    it('should render diagram with move option (snapshot at specific move)', async () => {
+      const moves = createTestMoves()
+
+      // Render board state up to move 3 (index 3, showing moves 1,2,3)
+      const canvas = await renderer.renderDiagram(19, moves, {
+        move: 3,
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
+      expect(canvas.width).toBe(480)
+      expect(canvas.height).toBe(480)
+    })
+
+    it('should render diagram with range option', async () => {
+      const moves = createTestMoves()
+
+      // Render only moves 2-4
+      const canvas = await renderer.renderDiagram(19, moves, {
+        moveRange: [2, 4],
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
+      expect(canvas.width).toBe(480)
+      expect(canvas.height).toBe(480)
+    })
+
+    it('should render diagram with lastMoveLabel option', async () => {
+      const moves = createTestMoves()
+
+      // Render with last move specially marked
+      const canvas = await renderer.renderDiagram(19, moves, {
+        lastMoveLabel: true,
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
+      expect(canvas.width).toBe(480)
+      expect(canvas.height).toBe(480)
+    })
+
+    it('should validate mutually exclusive options (move vs range)', async () => {
+      const moves = createTestMoves()
+
+      // Should throw error when both move and moveRange are specified
+      await expect(
+        renderer.renderDiagram(19, moves, {
+          move: 3,
+          moveRange: [2, 4],
+          size: 'small',
+        })
+      ).rejects.toThrow('Cannot specify both moveRange and move options')
+    })
+
+    it('should handle move option with pass moves', async () => {
+      const movesWithPass: Move[] = [
+        { color: 'black', position: { x: 3, y: 3 }, moveNumber: 1 },
+        { color: 'white', position: null, moveNumber: 2 }, // pass
+        { color: 'black', position: { x: 4, y: 4 }, moveNumber: 3 },
+      ]
+
+      const canvas = await renderer.renderDiagram(19, movesWithPass, {
+        move: 2, // Show up to move 2 (including pass)
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
+    })
+
+    it('should handle lastMoveLabel with range option', async () => {
+      const moves = createTestMoves()
+
+      // Combine range and lastMoveLabel
+      const canvas = await renderer.renderDiagram(19, moves, {
+        moveRange: [2, 4],
+        lastMoveLabel: true,
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
+    })
+
+    it('should handle lastMoveLabel when last move is a pass', async () => {
+      const movesEndingWithPass: Move[] = [
+        { color: 'black', position: { x: 3, y: 3 }, moveNumber: 1 },
+        { color: 'white', position: { x: 4, y: 4 }, moveNumber: 2 },
+        { color: 'black', position: null, moveNumber: 3 }, // pass
+      ]
+
+      const canvas = await renderer.renderDiagram(19, movesEndingWithPass, {
+        lastMoveLabel: true,
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
+    })
+
+    it('should handle edge case of empty moves with lastMoveLabel', async () => {
+      const canvas = await renderer.renderDiagram(19, [], {
+        lastMoveLabel: true,
+        size: 'small',
+      })
+
+      expect(canvas).toBeDefined()
     })
   })
 

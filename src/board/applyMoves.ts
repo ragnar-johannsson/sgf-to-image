@@ -22,19 +22,26 @@ export interface OverwrittenLabel {
 /**
  * Apply a sequence of moves to a board and return the final state
  * Handles capturing and tracks overwritten labels
+ *
+ * @param board - Initial board state
+ * @param moves - Array of moves to apply
+ * @param moveRange - Optional range [start, end] to filter moves by move number
+ * @param moveIndex - Optional index to apply moves up to (0-based, exclusive)
+ * @returns ApplyMovesResult with final board state and metadata
  */
 export function applyMoves(
   board: Board,
   moves: Move[],
-  moveRange?: [number, number]
+  moveRange?: [number, number],
+  moveIndex?: number
 ): ApplyMovesResult {
   let currentBoard = board
   const appliedMoves: Move[] = []
   const overwrittenLabels: OverwrittenLabel[] = []
   const movePositionMap = new Map<string, number>() // position -> move number
 
-  // Determine which moves to apply
-  const selectedMoves = selectMoveRange(moves, moveRange)
+  // Determine which moves to apply based on both range and index
+  const selectedMoves = selectMoves(moves, moveRange, moveIndex)
 
   for (const move of selectedMoves) {
     // Skip pass moves
@@ -99,21 +106,67 @@ export function applyMoves(
 }
 
 /**
+ * Apply moves up to a specific index and return intermediate board states
+ * Useful for creating snapshots at different points in the game
+ *
+ * @param board - Initial board state
+ * @param moves - Array of moves to apply
+ * @param maxIndex - Maximum index to apply moves up to (0-based, exclusive)
+ * @returns Array of ApplyMovesResult for each step up to maxIndex
+ */
+export function applyMovesWithSnapshots(
+  board: Board,
+  moves: Move[],
+  maxIndex?: number
+): ApplyMovesResult[] {
+  const snapshots: ApplyMovesResult[] = []
+  const endIndex =
+    maxIndex !== undefined ? Math.min(maxIndex, moves.length) : moves.length
+
+  // Create snapshots for each step from 0 to endIndex
+  for (let i = 0; i <= endIndex; i++) {
+    const result = applyMoves(board, moves, undefined, i)
+    snapshots.push(result)
+  }
+
+  return snapshots
+}
+
+/**
+ * Select moves based on range specification and/or index limit
+ * Combines both range filtering and index limiting
+ */
+export function selectMoves(
+  moves: Move[],
+  range?: [number, number],
+  moveIndex?: number
+): Move[] {
+  let selectedMoves = moves
+
+  // First, apply range filter if specified
+  if (range) {
+    const [startMove, endMove] = range
+    selectedMoves = selectedMoves.filter(
+      (move) => move.moveNumber >= startMove && move.moveNumber <= endMove
+    )
+  }
+
+  // Then, apply index limit if specified (limit to first N moves of the filtered set)
+  if (moveIndex !== undefined) {
+    selectedMoves = selectedMoves.slice(0, moveIndex)
+  }
+
+  return selectedMoves
+}
+
+/**
  * Select moves based on range specification
  */
 export function selectMoveRange(
   moves: Move[],
   range?: [number, number]
 ): Move[] {
-  if (!range) {
-    // Return all moves
-    return moves
-  }
-
-  const [startMove, endMove] = range
-  return moves.filter(
-    (move) => move.moveNumber >= startMove && move.moveNumber <= endMove
-  )
+  return selectMoves(moves, range, undefined)
 }
 
 /**

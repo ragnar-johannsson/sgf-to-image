@@ -2,22 +2,24 @@ import { describe, it, expect } from 'vitest'
 import { Board } from '../../src/board/Board'
 import {
   applyMoves,
+  applyMovesWithSnapshots,
+  selectMoves,
   selectMoveRange,
   generateMoveLabels,
   formatOverwrittenLabels,
 } from '../../src/board/applyMoves'
 import type { Move } from '../../src/types'
 
-describe('applyMoves', () => {
-  const createTestMoves = (): Move[] => [
-    { color: 'black', position: { x: 3, y: 3 }, moveNumber: 1 },
-    { color: 'white', position: { x: 4, y: 4 }, moveNumber: 2 },
-    { color: 'black', position: { x: 5, y: 5 }, moveNumber: 3 },
-    { color: 'white', position: { x: 6, y: 6 }, moveNumber: 4 },
-    { color: 'black', position: null, moveNumber: 5 }, // pass move
-    { color: 'white', position: { x: 7, y: 7 }, moveNumber: 6 },
-  ]
+const createTestMoves = (): Move[] => [
+  { color: 'black', position: { x: 3, y: 3 }, moveNumber: 1 },
+  { color: 'white', position: { x: 4, y: 4 }, moveNumber: 2 },
+  { color: 'black', position: { x: 5, y: 5 }, moveNumber: 3 },
+  { color: 'white', position: { x: 6, y: 6 }, moveNumber: 4 },
+  { color: 'black', position: null, moveNumber: 5 }, // pass move
+  { color: 'white', position: { x: 7, y: 7 }, moveNumber: 6 },
+]
 
+describe('applyMoves', () => {
   describe('Basic move application', () => {
     it('should apply all moves when no range specified', () => {
       const board = new Board(19)
@@ -220,6 +222,52 @@ describe('applyMoves', () => {
       expect(labels.get('3,3')).toBe(1)
       expect(labels.get('4,4')).toBe(3)
     })
+
+    it('should work correctly with range integration (DiagramRenderer pattern)', () => {
+      // Test the pattern used by DiagramRenderer: apply moves with range, then generate labels
+      const board = new Board(19)
+      const moves = createTestMoves()
+      const moveRange: [number, number] = [2, 4]
+
+      // Apply moves with range (as DiagramRenderer does)
+      const moveResult = applyMoves(board, moves, moveRange)
+
+      // Generate labels for the applied moves with the same range
+      const labels = generateMoveLabels(moveResult.appliedMoves, moveRange)
+
+      // Should have 3 moves applied (2, 3, 4) but only those in range get labels
+      expect(moveResult.appliedMoves).toHaveLength(3)
+      expect(labels.size).toBe(3)
+
+      // The labels should be sequential 1, 2, 3 for the range moves
+      expect(labels.get('4,4')).toBe(1) // move 2 -> label 1
+      expect(labels.get('5,5')).toBe(2) // move 3 -> label 2
+      expect(labels.get('6,6')).toBe(3) // move 4 -> label 3
+    })
+
+    it('should handle ranges that include pass moves', () => {
+      const moves: Move[] = [
+        { color: 'black', position: { x: 3, y: 3 }, moveNumber: 1 },
+        { color: 'white', position: { x: 4, y: 4 }, moveNumber: 2 },
+        { color: 'black', position: null, moveNumber: 3 }, // pass
+        { color: 'white', position: { x: 5, y: 5 }, moveNumber: 4 },
+        { color: 'black', position: { x: 6, y: 6 }, moveNumber: 5 },
+      ]
+
+      const board = new Board(19)
+      const moveRange: [number, number] = [2, 4]
+
+      const moveResult = applyMoves(board, moves, moveRange)
+      const labels = generateMoveLabels(moveResult.appliedMoves, moveRange)
+
+      // Should have moves 2, 3 (pass), 4 applied
+      expect(moveResult.appliedMoves).toHaveLength(3)
+
+      // Should only label non-pass moves: moves 2 and 4
+      expect(labels.size).toBe(2)
+      expect(labels.get('4,4')).toBe(1) // move 2 -> label 1
+      expect(labels.get('5,5')).toBe(2) // move 4 -> label 2
+    })
   })
 
   describe('Complex capture scenarios', () => {
@@ -262,5 +310,118 @@ describe('applyMoves', () => {
       expect(result.board.getStone({ x: 7, y: 7 })).toBe('black')
       expect(result.overwrittenLabels).toHaveLength(0) // No captures in this sequence
     })
+  })
+})
+
+describe('Move index and snapshots', () => {
+  it('should apply moves up to specified index', () => {
+    const board = new Board(19)
+    const moves = createTestMoves()
+
+    // Apply first 3 moves (index 0, 1, 2)
+    const result = applyMoves(board, moves, undefined, 3)
+
+    expect(result.appliedMoves).toHaveLength(3)
+    expect(result.board.getStone({ x: 3, y: 3 })).toBe('black') // move 1
+    expect(result.board.getStone({ x: 4, y: 4 })).toBe('white') // move 2
+    expect(result.board.getStone({ x: 5, y: 5 })).toBe('black') // move 3
+    expect(result.board.getStone({ x: 6, y: 6 })).toBe('empty') // move 4 not applied
+  })
+
+  it('should handle moveIndex of 0 (no moves applied)', () => {
+    const board = new Board(19)
+    const moves = createTestMoves()
+
+    const result = applyMoves(board, moves, undefined, 0)
+
+    expect(result.appliedMoves).toHaveLength(0)
+    expect(result.board.getStone({ x: 3, y: 3 })).toBe('empty')
+  })
+
+  it('should combine moveRange and moveIndex correctly', () => {
+    const board = new Board(19)
+    const moves = createTestMoves()
+
+    // Apply range [2, 4] but limit to first 2 moves of that range
+    const result = applyMoves(board, moves, [2, 4], 2)
+
+    expect(result.appliedMoves).toHaveLength(2)
+    expect(result.appliedMoves[0].moveNumber).toBe(2)
+    expect(result.appliedMoves[1].moveNumber).toBe(3)
+  })
+
+  it('should generate snapshots for all intermediate states', () => {
+    const board = new Board(19)
+    const moves = createTestMoves().slice(0, 3) // First 3 moves
+
+    const snapshots = applyMovesWithSnapshots(board, moves)
+
+    expect(snapshots).toHaveLength(4) // 0, 1, 2, 3 moves applied
+
+    // Snapshot 0: no moves
+    expect(snapshots[0].appliedMoves).toHaveLength(0)
+
+    // Snapshot 1: first move
+    expect(snapshots[1].appliedMoves).toHaveLength(1)
+    expect(snapshots[1].board.getStone({ x: 3, y: 3 })).toBe('black')
+
+    // Snapshot 2: first two moves
+    expect(snapshots[2].appliedMoves).toHaveLength(2)
+    expect(snapshots[2].board.getStone({ x: 3, y: 3 })).toBe('black')
+    expect(snapshots[2].board.getStone({ x: 4, y: 4 })).toBe('white')
+
+    // Snapshot 3: all three moves
+    expect(snapshots[3].appliedMoves).toHaveLength(3)
+    expect(snapshots[3].board.getStone({ x: 5, y: 5 })).toBe('black')
+  })
+
+  it('should limit snapshots to maxIndex', () => {
+    const board = new Board(19)
+    const moves = createTestMoves()
+
+    const snapshots = applyMovesWithSnapshots(board, moves, 2)
+
+    expect(snapshots).toHaveLength(3) // 0, 1, 2 moves applied
+    expect(snapshots[2].appliedMoves).toHaveLength(2)
+  })
+})
+
+describe('selectMoves', () => {
+  it('should select moves by index only', () => {
+    const moves = createTestMoves()
+    const selected = selectMoves(moves, undefined, 3)
+
+    expect(selected).toHaveLength(3)
+    expect(selected[0].moveNumber).toBe(1)
+    expect(selected[1].moveNumber).toBe(2)
+    expect(selected[2].moveNumber).toBe(3)
+  })
+
+  it('should select moves by range only', () => {
+    const moves = createTestMoves()
+    const selected = selectMoves(moves, [2, 4], undefined)
+
+    expect(selected).toHaveLength(3)
+    expect(selected[0].moveNumber).toBe(2)
+    expect(selected[1].moveNumber).toBe(3)
+    expect(selected[2].moveNumber).toBe(4)
+  })
+
+  it('should combine range and index selection', () => {
+    const moves = createTestMoves()
+    // First apply index limit (first 4 moves), then range filter [2, 4]
+    const selected = selectMoves(moves, [2, 4], 4)
+
+    expect(selected).toHaveLength(3) // moves 2, 3, 4 (move 4 is at index 3)
+    expect(selected[0].moveNumber).toBe(2)
+    expect(selected[1].moveNumber).toBe(3)
+    expect(selected[2].moveNumber).toBe(4)
+  })
+
+  it('should return empty array when index is 0', () => {
+    const moves = createTestMoves()
+    const selected = selectMoves(moves, undefined, 0)
+
+    expect(selected).toHaveLength(0)
   })
 })
